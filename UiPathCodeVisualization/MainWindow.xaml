@@ -18,8 +18,8 @@
     mc:Ignorable="d">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="3*" />
+            <ColumnDefinition Width="2*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" />
@@ -60,8 +60,12 @@
                 Grid.Row="1"
                 Margin="10"
                 Padding="10">
-                <StackPanel x:Name="projectPanel" Orientation="Vertical">
+                <StackPanel
+                    x:Name="projectPanel"
+                    AutomationProperties.AutomationId="projectPanel"
+                    Orientation="Vertical">
                     <TextBlock
+                        AutomationProperties.AutomationId="projectName"
                         FontWeight="Bold"
                         Style="{StaticResource MaterialDesignCaptionTextBlock}"
                         Text="{Binding Project.name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
@@ -73,6 +77,7 @@
                             Text="Studioバージョン:" />
                         <TextBlock
                             Margin="5,0,5,0"
+                            AutomationProperties.AutomationId="studioVersion"
                             Style="{StaticResource MaterialDesignCaptionTextBlock}"
                             Text="{Binding Project.studioVersion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         <TextBlock
@@ -81,15 +86,21 @@
                             Text="　/ Projectバージョン:" />
                         <TextBlock
                             Margin="5,0,5,0"
+                            AutomationProperties.AutomationId="projectVersion"
                             Style="{StaticResource MaterialDesignCaptionTextBlock}"
                             Text="{Binding Project.projectVersion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </StackPanel>
                     <Grid Margin="20,0,20,0">
+                        <Grid.Resources>
+                            <Style x:Key="CleanSeparator" TargetType="lvc:Separator">
+                                <Setter Property="IsEnabled" Value="False" />
+                            </Style>
+                        </Grid.Resources>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="2*" />
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*" />
@@ -113,6 +124,7 @@
                                     Margin="5,0,5,0"
                                     Padding="5,0,5,0"
                                     HorizontalAlignment="Right"
+                                    AutomationProperties.AutomationId="WorkflowFileCount"
                                     Foreground="White"
                                     Style="{StaticResource MaterialDesignHeadline4TextBlock}"
                                     Text="{Binding WorkflowFileCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -137,6 +149,7 @@
                                     Margin="5,0,5,0"
                                     Padding="5,0,5,0"
                                     HorizontalAlignment="Right"
+                                    AutomationProperties.AutomationId="TotalVariableCount"
                                     Foreground="White"
                                     Style="{StaticResource MaterialDesignHeadline4TextBlock}"
                                     Text="{Binding TotalVariableCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -160,6 +173,7 @@
                                     Margin="5,0,5,0"
                                     Padding="5,0,5,0"
                                     HorizontalAlignment="Right"
+                                    AutomationProperties.AutomationId="TotalAvtivityCount"
                                     Foreground="White"
                                     Style="{StaticResource MaterialDesignHeadline4TextBlock}"
                                     Text="{Binding TotalAvtivityCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -184,6 +198,7 @@
                                     Margin="5,0,5,0"
                                     Padding="5,0,5,0"
                                     HorizontalAlignment="Right"
+                                    AutomationProperties.AutomationId="TotalAvtivityKind"
                                     Foreground="White"
                                     Style="{StaticResource MaterialDesignHeadline4TextBlock}"
                                     Text="{Binding TotalAvtivityKind, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -207,6 +222,7 @@
                                     Margin="5,0,5,0"
                                     Padding="5,0,5,0"
                                     HorizontalAlignment="Right"
+                                    AutomationProperties.AutomationId="TotalCyclomaticComplexity"
                                     Foreground="White"
                                     Style="{StaticResource MaterialDesignHeadline4TextBlock}"
                                     Text="{Binding TotalCyclomaticComplexity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -230,6 +246,7 @@
                                     Margin="5,0,5,0"
                                     Padding="5,0,5,0"
                                     HorizontalAlignment="Right"
+                                    AutomationProperties.AutomationId="MaxNestedCount"
                                     Foreground="White"
                                     Style="{StaticResource MaterialDesignHeadline4TextBlock}"
                                     Text="{Binding MaxNestedCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -239,7 +256,7 @@
                         <Grid
                             Grid.Row="0"
                             Grid.Column="2"
-                            Grid.ColumnSpan="2">
+                            AutomationProperties.AutomationId="ProjectScoreGrid">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="*" />
                                 <RowDefinition Height="auto" />
@@ -248,6 +265,7 @@
                             <lvc:Gauge
                                 Grid.Row="0"
                                 Margin="5"
+                                AutomationProperties.AutomationId="WorkflowScoreAverage"
                                 LabelsVisibility="Collapsed"
                                 Value="{Binding WorkflowScoreAverage}"
                                 From="0"
@@ -262,13 +280,14 @@
                             </lvc:Gauge>
                             <TextBlock
                                 Grid.Row="1"
+                                AutomationProperties.AutomationId="プロジェクトスコア"
                                 IsEnabled="False"
                                 Style="{StaticResource MaterialDesignCaptionTextBlock}"
                                 Text="プロジェクトスコア"
                                 TextAlignment="Center" />
                         </Grid>
 
-                        <lvc:PieChart
+                        <!--<lvc:PieChart
                             x:Name="pieChart"
                             Grid.Row="1"
                             Grid.RowSpan="2"
@@ -279,8 +298,91 @@
                             DataTooltip="{x:Null}"
                             Hoverable="False"
                             LegendLocation="Bottom"
-                            Series="{Binding PieSeriesCollection}" />
+                            Series="{Binding PieSeriesCollection}" />-->
 
+                        <materialDesign:Card
+                            Grid.Row="0"
+                            Grid.Column="3"
+                            Margin="40,10,40,10"
+                            Background="OrangeRed">
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock
+                                    Margin="5,0,0,0"
+                                    Foreground="White"
+                                    IsEnabled="False"
+                                    Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                    Text="Bad ワークフロー数" />
+                                <TextBlock
+                                    Margin="5,0,5,0"
+                                    Padding="5,0,5,0"
+                                    HorizontalAlignment="Right"
+                                    AutomationProperties.AutomationId="BadWorkflowFileCount"
+                                    Foreground="White"
+                                    Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                                    Text="{Binding BadWorkflowFileCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    TextAlignment="Right" />
+                            </StackPanel>
+
+                        </materialDesign:Card>
+                        <lvc:CartesianChart
+                            x:Name="multiLineChart"
+                            Grid.Row="1"
+                            Grid.RowSpan="2"
+                            Grid.Column="2"
+                            Grid.ColumnSpan="2">
+                            <lvc:CartesianChart.AxisX>
+                                <lvc:Axis Labels="{Binding MultiChartLabels}" ShowLabels="False" />
+                            </lvc:CartesianChart.AxisX>
+                            <lvc:CartesianChart.AxisY>
+                                <lvc:Axis
+                                    Title="Score"
+                                    Foreground="DodgerBlue"
+                                    Position="LeftBottom" />
+                                <lvc:Axis
+                                    Title="Activity数"
+                                    Foreground="IndianRed"
+                                    Position="LeftBottom">
+                                    <lvc:Axis.Separator>
+                                        <lvc:Separator Style="{StaticResource CleanSeparator}" />
+                                    </lvc:Axis.Separator>
+                                </lvc:Axis>
+                                <lvc:Axis
+                                    Title="複雑度"
+                                    Foreground="DarkOliveGreen"
+                                    Position="RightTop">
+                                    <lvc:Axis.Separator>
+                                        <lvc:Separator Style="{StaticResource CleanSeparator}" />
+                                    </lvc:Axis.Separator>
+                                </lvc:Axis>
+                                <lvc:Axis
+                                    Title="ネストの深さ"
+                                    Foreground="BlueViolet"
+                                    Position="RightTop">
+                                    <lvc:Axis.Separator>
+                                        <lvc:Separator Style="{StaticResource CleanSeparator}" />
+                                    </lvc:Axis.Separator>
+                                </lvc:Axis>
+
+                            </lvc:CartesianChart.AxisY>
+                            <lvc:CartesianChart.Series>
+                                <lvc:LineSeries
+                                    Title="Score"
+                                    ScalesYAt="0"
+                                    Values="{Binding ScoreList}" />
+                                <lvc:LineSeries
+                                    Title="Activity数"
+                                    ScalesYAt="1"
+                                    Values="{Binding ActivityCountList}" />
+                                <lvc:LineSeries
+                                    Title="複雑度"
+                                    ScalesYAt="2"
+                                    Values="{Binding ComplexityList}" />
+                                <lvc:LineSeries
+                                    Title="ネストの深さ"
+                                    ScalesYAt="3"
+                                    Values="{Binding NestedCountList}" />
+                            </lvc:CartesianChart.Series>
+                        </lvc:CartesianChart>
                     </Grid>
 
                 </StackPanel>
@@ -344,6 +446,14 @@
                         Width="130"
                         DisplayMemberBinding="{Binding Path=DelayCount}"
                         Header="Delay" />
+                    <GridViewColumn
+                        Width="130"
+                        DisplayMemberBinding="{Binding Path=LogCount}"
+                        Header="Log" />
+                    <GridViewColumn
+                        Width="130"
+                        DisplayMemberBinding="{Binding Path=AnnotationCount}"
+                        Header="注釈" />
                 </GridView>
             </ListView.View>
         </ListView>
@@ -362,9 +472,14 @@
                                 <TextBlock Text="{Binding Name}" />
                             </HierarchicalDataTemplate>
                         </TreeView.ItemTemplate>
+                        <TreeView.ItemContainerStyle>
+                            <Style TargetType="{x:Type TreeViewItem}">
+                                <Setter Property="IsExpanded" Value="True" />
+                            </Style>
+                        </TreeView.ItemContainerStyle>
                     </TreeView>
                 </TabItem>
-                <TabItem Controls:HeaderedControlHelper.HeaderFontSize="14" Header="ActivityMap">
+                <TabItem Controls:HeaderedControlHelper.HeaderFontSize="14" Header="Activity一覧">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="2*" />
@@ -402,20 +517,52 @@
                             <ListView.View>
                                 <GridView>
                                     <GridViewColumn
-                                        Width="250"
+                                        Width="150"
                                         DisplayMemberBinding="{Binding Path=ActivityName}"
                                         Header="アクティビティ" />
                                     <GridViewColumn
                                         Width="150"
                                         DisplayMemberBinding="{Binding Path=DisplayName}"
                                         Header="表示名" />
+                                    <GridViewColumn
+                                        Width="200"
+                                        DisplayMemberBinding="{Binding Path=AnnotationText}"
+                                        Header="注釈" />
+
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </Grid>
+                </TabItem>
+                <TabItem Controls:HeaderedControlHelper.HeaderFontSize="14" Header="変数一覧">
+                    <Grid Grid.Row="0" Grid.RowSpan="2">
+                        <ListView
+                            x:Name="variableListView"
+                            Grid.Row="1"
+                            Margin="5"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            ItemsSource="{Binding}">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn
+                                        Width="110"
+                                        DisplayMemberBinding="{Binding Path=Name}"
+                                        Header="変数名" />
+                                    <GridViewColumn
+                                        Width="110"
+                                        DisplayMemberBinding="{Binding Path=TypeArguments}"
+                                        Header="型" />
+                                    <GridViewColumn
+                                        Width="200"
+                                        DisplayMemberBinding="{Binding Path=AnnotationText}"
+                                        Header="注釈" />
                                 </GridView>
                             </ListView.View>
                         </ListView>
                     </Grid>
                 </TabItem>
             </TabControl>
-
         </Grid>
 
     </Grid>

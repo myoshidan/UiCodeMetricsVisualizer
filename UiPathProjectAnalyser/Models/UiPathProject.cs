@@ -55,4 +55,18 @@ namespace UiPathProjectAnalyser.Models
         public object[] privateWorkflows { get; set; }
     }
 
+    public class UiPathProject2016
+    {
+        public string description { get; set; }
+        public string version { get; set; }
+        public string main { get; set; }
+        public string id { get; set; }
+        public Dependencies dependencies { get; set; }
+        public Configurationoptions configurationOptions { get; set; }
+        public string[] excludedData { get; set; }
+    }
+
+    public class Configurationoptions
+    {
+    }
 }

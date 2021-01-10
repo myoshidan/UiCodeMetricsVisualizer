@@ -22,6 +22,8 @@ namespace UiPathProjectAnalyser.Models
         public int RetryScopeCount { get; set; } = 0;
         public int DelayCount { get; set; } = 0;
         public int VariableCount { get; set; } = 0;
+        public int LogCount { get; set; } = 0;
+        public int AnnotationCount { get; set; } = 0;
         public int NestedCount { get; set; } = 0;
         public int WorkflowScore { get; set; } = 0;
 
@@ -58,7 +60,13 @@ namespace UiPathProjectAnalyser.Models
                     CyclomaticComplexity++;
                 };
 
-                if(item.Name.LocalName == "TryCatch")
+                if (item.Attributes().Where(p => p.Name.LocalName == "Annotation.AnnotationText").Count() > 0)
+                {
+                    activity.AnnotationText = item.Attributes().Where(p => p.Name.LocalName == "Annotation.AnnotationText").FirstOrDefault().Value;
+                    AnnotationCount++;
+                }
+
+                if (item.Name.LocalName == "TryCatch")
                 {
                     TryCatchCount++;
                 }
@@ -69,6 +77,10 @@ namespace UiPathProjectAnalyser.Models
                 else if (item.Name.LocalName == "Delay")
                 {
                     DelayCount++;
+                }
+                else if (item.Name.LocalName == "LogMessage")
+                {
+                    LogCount++;
                 }
 
             }

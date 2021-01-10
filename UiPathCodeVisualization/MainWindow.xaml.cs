@@ -1,25 +1,16 @@
-﻿using MahApps.Metro.Controls;
+﻿using LiveCharts;
+using LiveCharts.Wpf;
+using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using UiPathProjectAnalyser.Models;
-using UiPathCodeVisualization;
-using UiPathProjectAnalyser.Utility;
-using System.Linq;
-using Microsoft.WindowsAPICodePack.Dialogs;
-using LiveCharts;
-using LiveCharts.Wpf;
 
 namespace UiPathCodeVisualization
 {
@@ -49,7 +40,9 @@ namespace UiPathCodeVisualization
             dlg.Filters.Add(filter);
             ChartData = new LiveChartData();
             cartesianChart.DataContext = ChartData;
-            pieChart.DataContext = ChartData;
+            //pieChart.DataContext = ChartData;
+            multiLineChart.DataContext = ChartData;
+
             PointLabel = chartPoint =>
                 string.Format("{0} ({1:P})", chartPoint.Y, chartPoint.Participation);
         }
@@ -59,6 +52,8 @@ namespace UiPathCodeVisualization
             if (listView.SelectedItems.Count == 0) return;
             var activityList = (listView.SelectedItems[0] as UiPathWorkFlow).ActivityLists;
             this.activityListView.DataContext = activityList;
+            var variableList = (listView.SelectedItems[0] as UiPathWorkFlow).VariableLists;
+            this.variableListView.DataContext = variableList;
             ChartData.SetActivityData(activityList);
         }
 
@@ -70,15 +65,35 @@ namespace UiPathCodeVisualization
             }
         }
 
-        private void loadButton_Click(object sender, RoutedEventArgs e)
+        private async void loadButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!string.IsNullOrEmpty(this.folderTextBox.Text)){
-                var result = new UiPathProjectAnalyser.UiPathProjectAnalyser(this.folderTextBox.Text);
+            if (string.IsNullOrEmpty(this.folderTextBox.Text)) {
+                await this.ShowMessageAsync("Warn", "project.jsonを指定してください");
+                return;
+            }
+
+            if (!File.Exists(this.folderTextBox.Text))
+            {
+                await this.ShowMessageAsync("Warn", "project.jsonが見つかりません");
+                return;
+            }
+
+            UiPathProjectAnalyser.UiPathProjectAnalyser result;
+            try
+            {
+                result = new UiPathProjectAnalyser.UiPathProjectAnalyser(this.folderTextBox.Text);
                 this.projectPanel.DataContext = result;
                 this.CTreeView.ItemsSource = result.CallHierarchies;
                 this.listView.DataContext = result.WorkFlows;
+
                 this.activityListView.DataContext = result.WorkFlows.FirstOrDefault()?.ActivityLists;
-                ChartData.SetTotalActivityData(result.WorkFlows,result.TotalAvtivityCount);
+                this.variableListView.DataContext = result.WorkFlows.FirstOrDefault()?.VariableLists;                
+                ChartData.SetTotalActivityData(result.WorkFlows, result.TotalAvtivityCount);
+            }
+            catch (Exception ex)
+            {
+                await this.ShowMessageAsync("Error", ex.Message);
+                return;
             }
         }
 

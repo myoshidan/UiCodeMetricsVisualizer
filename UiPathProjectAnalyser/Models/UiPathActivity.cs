@@ -11,6 +11,7 @@ namespace UiPathProjectAnalyser.Models
     {
         public string ActivityName { get; set; }
         public string DisplayName { get; set; }
+        public string AnnotationText { get; set; }
         public XElement Element { get; set; }
     }
 }

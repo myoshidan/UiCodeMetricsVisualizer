@@ -19,6 +19,12 @@ namespace UiPathCodeVisualization
         public SeriesCollection PieSeriesCollection { get; set; }
         public Func<ChartPoint, string> PointLabel { get; set; }
 
+        public ChartValues<int> ScoreList { get; set; } = new ChartValues<int>();
+        public ChartValues<int> ActivityCountList { get; set; } = new ChartValues<int>() ;
+        public ChartValues<int> ComplexityList { get; set; } = new ChartValues<int>();
+        public ChartValues<int> NestedCountList { get; set; } = new ChartValues<int>();
+        public List<string> MultiChartLabels { get; set; } = new List<string>();
+
         public LiveChartData()
         {
             SeriesCollection = new SeriesCollection();
@@ -32,42 +38,53 @@ namespace UiPathCodeVisualization
 
         public void SetTotalActivityData(ObservableCollection<UiPathWorkFlow> workFlows,int totalActivityCount)
         {
-            var activities = workFlows.SelectMany(x => x.ActivityLists).GroupBy(p => p.ActivityName).OrderByDescending(p => p.Count());
-            var count = 0;
-            var actCount = 0;
-            var collection = new List<PieSeries>();
+            //var activities = workFlows.SelectMany(x => x.ActivityLists).GroupBy(p => p.ActivityName).OrderByDescending(p => p.Count());
+            //var count = 0;
+            //var actCount = 0;
+            //var collection = new List<PieSeries>();
 
-            foreach (var item in activities)
-            {
-                if(count < 5)
-                {
-                    collection.Add(new PieSeries()
-                    {
-                        Title = item.Key,
-                        Values = new ChartValues<int> { item.Count() },
-                        LabelPoint = PointLabel,
-                        LabelPosition = PieLabelPosition.InsideSlice,
-                        DataLabels = true
-                    }) ;
-                    count += 1;
-                    actCount += item.Count();
-                }
-                else
-                {
-                    collection.Add(new PieSeries()
-                    {
-                        Title = "Other",
-                        Values = new ChartValues<int> { totalActivityCount - actCount },
-                        LabelPoint = PointLabel,
-                        LabelPosition = PieLabelPosition.InsideSlice,
-                        DataLabels = true
-                    });
-                    break;
-                }
-            }
+            //foreach (var item in activities)
+            //{
+            //    if(count < 5)
+            //    {
+            //        collection.Add(new PieSeries()
+            //        {
+            //            Title = item.Key,
+            //            Values = new ChartValues<int> { item.Count() },
+            //            LabelPoint = PointLabel,
+            //            LabelPosition = PieLabelPosition.InsideSlice,
+            //            DataLabels = true
+            //        }) ;
+            //        count += 1;
+            //        actCount += item.Count();
+            //    }
+            //    else
+            //    {
+            //        collection.Add(new PieSeries()
+            //        {
+            //            Title = "Other",
+            //            Values = new ChartValues<int> { totalActivityCount - actCount },
+            //            LabelPoint = PointLabel,
+            //            LabelPosition = PieLabelPosition.InsideSlice,
+            //            DataLabels = true
+            //        });
+            //        break;
+            //    }
+            //}
 
-            this.PieSeriesCollection.Clear();
-            this.PieSeriesCollection.AddRange(collection);
+            //this.PieSeriesCollection.Clear();
+            //this.PieSeriesCollection.AddRange(collection);
+            this.ScoreList.Clear();
+            this.ScoreList.AddRange(new ChartValues<int>(workFlows.Select(x => x.WorkflowScore)));
+            this.ActivityCountList.Clear();
+            this.ActivityCountList.AddRange(new ChartValues<int>(workFlows.Select(x => x.ActivityCount)));
+            this.ComplexityList.Clear();
+            this.ComplexityList.AddRange(new ChartValues<int>(workFlows.Select(x => x.CyclomaticComplexity)));
+            this.NestedCountList.Clear();
+            this.NestedCountList.AddRange(new ChartValues<int>(workFlows.Select(x => x.NestedCount)));
+            this.MultiChartLabels.Clear();
+            this.MultiChartLabels.AddRange(workFlows.Select(p => p.FileName));
+
         }
 
         public void SetActivityData(ObservableCollection<UiPathActivity> activityLists)

@@ -16,7 +16,9 @@ namespace UiPathProjectAnalyser
         public string ProjectFolderPath { get; set; }
         public string ProjectFilePath { get; set; }
         public UiPathProject Project { get; set; }
+        public UiPathProject2016 Project2016 { get; set; }  
         public int WorkflowFileCount { get; set; }
+        public int BadWorkflowFileCount { get; set; }
         public int TotalAvtivityCount { get; set; }
         public int TotalAvtivityKind { get; set; }
         public int TotalVariableCount { get; set; }
@@ -35,7 +37,22 @@ namespace UiPathProjectAnalyser
             this.ProjectFilePath = jsonFilePath;
             this.ProjectFolderPath = Path.GetDirectoryName(jsonFilePath);
             this.Project = GetProjectInfo(jsonFilePath);
-            if (this.Project.name == null) return;
+            if (this.Project.name == null)
+            {
+                this.Project2016 = GetProject2016Info(jsonFilePath);
+                if(this.Project2016.id != null)
+                {
+                    this.Project.name = this.Project2016.id;
+                    this.Project.description = this.Project2016.description;
+                    this.Project.main = this.Project2016.main;
+                    this.Project.studioVersion = this.Project2016.version;
+                }
+                else
+                {
+                    throw new ArgumentException($"{jsonFilePath}は有効なUiPathProjectファイルではありません");
+                }
+            }
+
             this.XamlFiles = GetXamlFiles(ProjectFolderPath);
             this.WorkflowFileCount = this.XamlFiles.Count();
             foreach (var file in XamlFiles)
@@ -43,14 +60,15 @@ namespace UiPathProjectAnalyser
                 WorkFlows.Add(new UiPathWorkFlow(file));
             }
             if (WorkFlows.Count == 0) return;
+            WorkFlows = new ObservableCollection<UiPathWorkFlow>(WorkFlows.OrderBy(p => p.WorkflowScore));
             this.TotalAvtivityCount = WorkFlows.Select(x => x.ActivityCount).Sum();
             this.TotalVariableCount = WorkFlows.Select(x => x.VariableCount).Sum();
             this.MaxNestedCount = WorkFlows.Select(x => x.NestedCount).Max();
             this.TotalCyclomaticComplexity = WorkFlows.Select(x => x.CyclomaticComplexity).Sum();
             this.TotalAvtivityKind= WorkFlows.SelectMany(x => x.ActivityLists).GroupBy(p => p.ActivityName).Count();
             this.WorkflowScoreAverage = (int)WorkFlows.Select(x => x.WorkflowScore).Average();
+            this.BadWorkflowFileCount = (int)WorkFlows.Where(x => x.WorkflowScore < 50).Count();
             this.CallHierarchies = FetchCallHierarchy(this.Project.main);
-
         }
 
         private UiPathProject GetProjectInfo(string jsonFilePath)
@@ -59,6 +77,15 @@ namespace UiPathProjectAnalyser
             {
                 var jsonData = sr.ReadToEnd();
                 return JsonConvert.DeserializeObject<UiPathProject>(jsonData);
+            }
+        }
+
+        private UiPathProject2016 GetProject2016Info(string jsonFilePath)
+        {
+            using (var sr = new StreamReader(jsonFilePath, System.Text.Encoding.UTF8))
+            {
+                var jsonData = sr.ReadToEnd();
+                return JsonConvert.DeserializeObject<UiPathProject2016>(jsonData);
             }
         }
 
