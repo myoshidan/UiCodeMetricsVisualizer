@@ -458,8 +458,56 @@
             </ListView.View>
         </ListView>
 
+        <Grid Grid.Row="0" Grid.Column="1">
+            <Grid Margin="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="auto" />
+                </Grid.ColumnDefinitions>
+
+                <Button
+                    x:Name="exportButton"
+                    Grid.Column="1"
+                    Margin="10,5,10,5"
+                    Click="exportButton_Click"
+                    Content="出力" />
+
+                <Button
+                    x:Name="settingButton"
+                    Grid.Column="2"
+                    Margin="0,5,5,5"
+                    Click="settingButton_Click"
+                    Content="設定" />
+            </Grid>
+        </Grid>
+
         <Grid Grid.Row="1" Grid.Column="1">
             <TabControl Style="{StaticResource MahApps.Styles.TabControl.AnimatedSingleRow}">
+                <TabItem Controls:HeaderedControlHelper.HeaderFontSize="14" Header="依存関係ライブラリ">
+                    <Grid Grid.Row="0" Grid.RowSpan="2">
+                        <ListView
+                            x:Name="libraryListView"
+                            Grid.Row="1"
+                            Margin="5"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            ItemsSource="{Binding}">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn
+                                        Width="200"
+                                        DisplayMemberBinding="{Binding Path=LibraryName}"
+                                        Header="ライブラリ名" />
+                                    <GridViewColumn
+                                        Width="150"
+                                        DisplayMemberBinding="{Binding Path=Version}"
+                                        Header="バージョン" />
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </Grid>
+                </TabItem>
                 <TabItem Controls:HeaderedControlHelper.HeaderFontSize="14" Header="呼び出し階層">
                     <TreeView
                         x:Name="CTreeView"

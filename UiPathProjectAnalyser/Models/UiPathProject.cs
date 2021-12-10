@@ -17,6 +17,7 @@ namespace UiPathProjectAnalyser.Models
         public object[] webServices { get; set; }
         public string schemaVersion { get; set; }
         public string studioVersion { get; set; }
+        public string toolVersion { get; set; }
         public string projectVersion { get; set; }
         public Runtimeoptions runtimeOptions { get; set; }
         public Designoptions designOptions { get; set; }
@@ -25,10 +26,7 @@ namespace UiPathProjectAnalyser.Models
 
     public class Dependencies
     {
-        public string UiPathExcelActivities { get; set; }
-        public string UiPathMailActivities { get; set; }
-        public string UiPathSystemActivities { get; set; }
-        public string UiPathUIAutomationActivities { get; set; }
+        public Dictionary<string,string> Libraries { get; set; }
     }
 
     public class Runtimeoptions

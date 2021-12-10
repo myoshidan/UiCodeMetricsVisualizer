@@ -85,14 +85,14 @@ namespace UiPathCodeVisualization
                 this.projectPanel.DataContext = result;
                 this.CTreeView.ItemsSource = result.CallHierarchies;
                 this.listView.DataContext = result.WorkFlows;
-
+                this.libraryListView.DataContext = result.LibraryLists;
                 this.activityListView.DataContext = result.WorkFlows.FirstOrDefault()?.ActivityLists;
                 this.variableListView.DataContext = result.WorkFlows.FirstOrDefault()?.VariableLists;                
                 ChartData.SetTotalActivityData(result.WorkFlows, result.TotalAvtivityCount);
             }
             catch (Exception ex)
             {
-                await this.ShowMessageAsync("Error", ex.Message);
+                await this.ShowMessageAsync("Error",$"{ex.Message},{Environment.NewLine},{ex.StackTrace}");
                 return;
             }
         }
@@ -107,6 +107,16 @@ namespace UiPathCodeVisualization
 
             var selectedSeries = (PieSeries)chartpoint.SeriesView;
             selectedSeries.PushOut = 8;
+        }
+
+        private void settingButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void exportButton_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

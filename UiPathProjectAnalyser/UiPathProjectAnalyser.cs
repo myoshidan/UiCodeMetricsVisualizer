@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -29,6 +30,9 @@ namespace UiPathProjectAnalyser
         public ObservableCollection<CallHierarchy> CallHierarchies { get; set; } = new ObservableCollection<CallHierarchy>();
 
         public ObservableCollection<UiPathWorkFlow> WorkFlows { get; set; } = new ObservableCollection<UiPathWorkFlow>();
+
+        public ObservableCollection<UiPathLibraries> LibraryLists { get; set; } = new ObservableCollection<UiPathLibraries>();
+
         private List<string> XamlFiles { get; set; }
 
 
@@ -53,11 +57,25 @@ namespace UiPathProjectAnalyser
                 }
             }
 
+            if(this.Project.studioVersion == null && this.Project.toolVersion !=null)
+            {
+                this.Project.studioVersion = this.Project.toolVersion;
+            }
+
+            //JObject
+            var jobj = GetProjectInfoJObject(jsonFilePath);
+            foreach (JProperty jitem in jobj["dependencies"])
+            {
+                this.LibraryLists.Add(new UiPathLibraries() { LibraryName = jitem.Name, Version = jitem.Value.ToString() });
+            }
+
             this.XamlFiles = GetXamlFiles(ProjectFolderPath);
             this.WorkflowFileCount = this.XamlFiles.Count();
             foreach (var file in XamlFiles)
             {
-                WorkFlows.Add(new UiPathWorkFlow(file));
+                if (Path.GetFileNameWithoutExtension(file) != "GlobalHandlerX"){
+                    WorkFlows.Add(new UiPathWorkFlow(file));
+                }
             }
             if (WorkFlows.Count == 0) return;
             WorkFlows = new ObservableCollection<UiPathWorkFlow>(WorkFlows.OrderBy(p => p.WorkflowScore));
@@ -86,6 +104,15 @@ namespace UiPathProjectAnalyser
             {
                 var jsonData = sr.ReadToEnd();
                 return JsonConvert.DeserializeObject<UiPathProject2016>(jsonData);
+            }
+        }
+
+        private JObject GetProjectInfoJObject(string jsonFilePath)
+        {
+            using (var sr = new StreamReader(jsonFilePath, System.Text.Encoding.UTF8))
+            {
+                var jsonData = sr.ReadToEnd();
+                return JObject.Parse(jsonData);
             }
         }
 
@@ -118,6 +145,7 @@ namespace UiPathProjectAnalyser
             var childHierarchy = new CallHierarchy(fileName);
             hierarchy.CallHierarchies.Add(childHierarchy);
 
+            if (workflow == null) return;
             foreach (var item in workflow.InvokeFiles)
             {
                 GetHierarchy(item, ref childHierarchy);

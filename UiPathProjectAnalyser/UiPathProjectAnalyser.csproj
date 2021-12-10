@@ -48,6 +48,7 @@
     <Compile Include="Helper\WorkflowScoreHelper.cs" />
     <Compile Include="Models\CallHierarchy.cs" />
     <Compile Include="Models\UiPathActivity.cs" />
+    <Compile Include="Models\UiPathLibraries.cs" />
     <Compile Include="Models\UiPathVariable.cs" />
     <Compile Include="Models\UiPathWorkFlow.cs" />
     <Compile Include="UiPathProjectAnalyser.cs" />
