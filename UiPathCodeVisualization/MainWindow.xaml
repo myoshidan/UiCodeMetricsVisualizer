@@ -174,7 +174,7 @@
 
         <metro:HamburgerMenu.Content>
             <Grid x:Name="mainGrid">
-                <Grid x:Name="SearchGrid" Visibility="Hidden">
+                <Grid x:Name="SearchGrid" Visibility="Visible">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="auto" />
                         <RowDefinition Height="*" />
@@ -267,7 +267,7 @@
                         </ListView.View>
                     </ListView>
                 </Grid>
-                <Grid x:Name="AnalysisGrid" Visibility="Visible">
+                <Grid x:Name="AnalysisGrid" Visibility="Hidden">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="3*" />
                         <ColumnDefinition Width="2*" />
