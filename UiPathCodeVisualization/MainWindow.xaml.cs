@@ -8,8 +8,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using UiPathProjectAnalyser.Models;
 
 namespace UiPathCodeVisualization
@@ -24,6 +26,8 @@ namespace UiPathCodeVisualization
         public LiveChartData ChartData { get; set; }
         public Func<ChartPoint, string> PointLabel { get; set; }
 
+        public ObservableCollection<UiPathProjectAnalyser.UiPathProjectAnalyser> UiPathProjects { get; set; }
+
         public MainWindow()
         {
             InitializeComponent();
@@ -33,11 +37,13 @@ namespace UiPathCodeVisualization
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             dlg = new CommonOpenFileDialog();
-            dlg.Title = "project.jsonを選択してください";
-            var filter = new CommonFileDialogFilter();
-            filter.DisplayName = "許可されたファイル";
-            filter.Extensions.Add("json");
-            dlg.Filters.Add(filter);
+            dlg.Title = "分析対象の親フォルダを指定してください";
+            dlg.IsFolderPicker = true;
+            dlg.RestoreDirectory = true;
+
+            UiPathProjects = new ObservableCollection<UiPathProjectAnalyser.UiPathProjectAnalyser>();
+            BindingOperations.EnableCollectionSynchronization(UiPathProjects, new object());
+
             ChartData = new LiveChartData();
             cartesianChart.DataContext = ChartData;
             //pieChart.DataContext = ChartData;
@@ -68,30 +74,52 @@ namespace UiPathCodeVisualization
         private async void loadButton_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(this.folderTextBox.Text)) {
-                await this.ShowMessageAsync("Warn", "project.jsonを指定してください");
+                await this.ShowMessageAsync("Warn", "分析対象の親フォルダを指定してください");
                 return;
             }
 
-            if (!File.Exists(this.folderTextBox.Text))
+            if (!Directory.Exists(this.folderTextBox.Text))
             {
-                await this.ShowMessageAsync("Warn", "project.jsonが見つかりません");
+                await this.ShowMessageAsync("Warn", "分析対象の親フォルダが見つかりません");
                 return;
             }
-
-            UiPathProjectAnalyser.UiPathProjectAnalyser result;
             try
             {
-                result = new UiPathProjectAnalyser.UiPathProjectAnalyser(this.folderTextBox.Text);
+                var projectJsonList = Directory.EnumerateFiles(this.folderTextBox.Text, "project.json", SearchOption.AllDirectories);
+                if(projectJsonList.Count() == 0)
+                {
+                    await this.ShowMessageAsync("Warn", "指定フォルダ内にproject.jsonファイルが見つかりません");
+                    return;
+                }
+
+                UiPathProjects.Clear();
+
+                progress.IsActive = true;
+
+                await Task.Run(() =>
+                {
+                    foreach (var projectJsonFile in projectJsonList)
+                    {
+                        UiPathProjects.Add(new UiPathProjectAnalyser.UiPathProjectAnalyser(projectJsonFile));
+                    }
+                });
+
+                progress.IsActive = false;
+
+                var result = UiPathProjects.FirstOrDefault();
                 this.projectPanel.DataContext = result;
                 this.CTreeView.ItemsSource = result.CallHierarchies;
                 this.listView.DataContext = result.WorkFlows;
                 this.libraryListView.DataContext = result.LibraryLists;
                 this.activityListView.DataContext = result.WorkFlows.FirstOrDefault()?.ActivityLists;
-                this.variableListView.DataContext = result.WorkFlows.FirstOrDefault()?.VariableLists;                
+                this.variableListView.DataContext = result.WorkFlows.FirstOrDefault()?.VariableLists;
                 ChartData.SetTotalActivityData(result.WorkFlows, result.TotalAvtivityCount);
+
+                this.projectListView.DataContext = UiPathProjects;
             }
             catch (Exception ex)
             {
+                progress.IsActive = false;
                 await this.ShowMessageAsync("Error",$"{ex.Message},{Environment.NewLine},{ex.StackTrace}");
                 return;
             }
@@ -109,14 +137,41 @@ namespace UiPathCodeVisualization
             selectedSeries.PushOut = 8;
         }
 
-        private void settingButton_Click(object sender, RoutedEventArgs e)
+
+        private void HamburgerMenu_ItemInvoked(object sender, HamburgerMenuItemInvokedEventArgs args)
         {
+            switch ((args.InvokedItem as HamburgerMenuItem).Label)
+            {
+                case "Search":
+                    SearchGrid.Visibility = Visibility.Visible;
+                    AnalysisGrid.Visibility = Visibility.Hidden;
+                    break;
+                case "Analysis":
+                    AnalysisGrid.Visibility = Visibility.Visible;
+                    SearchGrid.Visibility = Visibility.Hidden;
+                    break;
+                default:
+                    break;
+            }
 
         }
 
-        private void exportButton_Click(object sender, RoutedEventArgs e)
+        private void projectListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (projectListView.SelectedItems.Count == 0) return;
+            var result = projectListView.SelectedItems[0] as UiPathProjectAnalyser.UiPathProjectAnalyser;
+            this.projectPanel.DataContext = result;
+            this.CTreeView.ItemsSource = result.CallHierarchies;
+            this.listView.DataContext = result.WorkFlows;
+            this.libraryListView.DataContext = result.LibraryLists;
+            this.activityListView.DataContext = result.WorkFlows.FirstOrDefault()?.ActivityLists;
+            this.variableListView.DataContext = result.WorkFlows.FirstOrDefault()?.VariableLists;
+            ChartData.SetTotalActivityData(result.WorkFlows, result.TotalAvtivityCount);
+            AnalysisGrid.Visibility = Visibility.Visible;
+            SearchGrid.Visibility = Visibility.Hidden;
 
+            hamburgerMenu.SelectedIndex = 1;
         }
+
     }
 }

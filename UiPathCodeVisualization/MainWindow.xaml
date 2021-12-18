@@ -4,10 +4,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
     xmlns:local="clr-namespace:UiPathCodeVisualization"
     xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:metro="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:model="clr-namespace:UiPathProjectAnalyser.Models;assembly=UiPathProjectAnalyser"
     Title="UiPathCodeVisualizer"
     Width="1200"
@@ -16,602 +18,788 @@
     TitleCharacterCasing="Normal"
     WindowState="Maximized"
     mc:Ignorable="d">
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="3*" />
-            <ColumnDefinition Width="2*" />
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="auto" />
-            <RowDefinition Height="3*" />
-            <RowDefinition Height="2*" />
-        </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Grid.Column="0">
-            <Grid Margin="10">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="auto" />
-                    <ColumnDefinition Width="auto" />
-                </Grid.ColumnDefinitions>
+    <Controls:MetroWindow.Resources>
+        <ResourceDictionary>
 
-                <TextBox
-                    x:Name="folderTextBox"
-                    Grid.Column="0"
-                    materialDesign:HintAssist.Hint="フォルダパスを入力"
-                    Style="{StaticResource MaterialDesignFloatingHintTextBox}" />
-                <Button
-                    x:Name="folderButton"
-                    Grid.Column="1"
-                    Margin="10,5,10,5"
-                    Click="folderButton_Click"
-                    Content="…" />
-                <Button
-                    x:Name="loadButton"
-                    Grid.Column="2"
-                    Margin="0,5,5,5"
-                    Click="loadButton_Click"
-                    Content="読込" />
-            </Grid>
-        </Grid>
-
-        <Grid Grid.Row="1" Grid.Column="0">
-            <materialDesign:Card
-                Grid.Row="1"
-                Margin="10"
-                Padding="10">
-                <StackPanel
-                    x:Name="projectPanel"
-                    AutomationProperties.AutomationId="projectPanel"
-                    Orientation="Vertical">
+            <!--  This is the template for all menu items. In this sample we use the glyph items.  -->
+            <DataTemplate x:Key="HamburgerMenuItem" DataType="{x:Type Controls:HamburgerMenuGlyphItem}">
+                <DockPanel Height="48" LastChildFill="True">
+                    <ContentControl
+                        x:Name="IconPart"
+                        Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type Controls:HamburgerMenu}}, Path=CompactPaneLength}"
+                        Content="{Binding Icon}"
+                        DockPanel.Dock="Left"
+                        Focusable="False"
+                        IsTabStop="False" />
                     <TextBlock
-                        AutomationProperties.AutomationId="projectName"
-                        FontWeight="Bold"
-                        Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                        Text="{Binding Project.name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <Separator Margin="8,0,8,0" Style="{StaticResource MaterialDesignDarkSeparator}" />
-                    <StackPanel Orientation="Horizontal">
+                        x:Name="TextPart"
+                        VerticalAlignment="Center"
+                        FontSize="16"
+                        Text="{Binding Label}" />
+                </DockPanel>
+                <DataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType={x:Type Controls:HamburgerMenu}}, Path=PanePlacement}" Value="Right">
+                        <Setter TargetName="IconPart" Property="DockPanel.Dock" Value="Right" />
+                        <Setter TargetName="TextPart" Property="Margin" Value="8,0,0,0" />
+                    </DataTrigger>
+                </DataTemplate.Triggers>
+            </DataTemplate>
+
+            <!--  This is the template for the option menu item  -->
+            <DataTemplate x:Key="HamburgerOptionsMenuItem" DataType="{x:Type Controls:HamburgerMenuIconItem}">
+                <DockPanel Height="48" LastChildFill="True">
+                    <ContentControl
+                        x:Name="IconPart"
+                        Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type Controls:HamburgerMenu}}, Path=CompactPaneLength}"
+                        Content="{Binding Icon}"
+                        DockPanel.Dock="Left"
+                        Focusable="False"
+                        IsTabStop="False" />
+                    <TextBlock
+                        x:Name="TextPart"
+                        VerticalAlignment="Center"
+                        FontSize="16"
+                        Text="{Binding Label}" />
+                </DockPanel>
+                <DataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType={x:Type Controls:HamburgerMenu}}, Path=PanePlacement}" Value="Right">
+                        <Setter TargetName="IconPart" Property="DockPanel.Dock" Value="Right" />
+                        <Setter TargetName="TextPart" Property="Margin" Value="8,0,0,0" />
+                    </DataTrigger>
+                </DataTemplate.Triggers>
+            </DataTemplate>
+
+        </ResourceDictionary>
+    </Controls:MetroWindow.Resources>
+
+    <metro:HamburgerMenu
+        x:Name="hamburgerMenu"
+        DisplayMode="CompactOverlay"
+        IsPaneOpen="{Binding IsHamburgerMenuPanelOpened.Value, Mode=TwoWay}"
+        ItemInvoked="HamburgerMenu_ItemInvoked"
+        ItemTemplate="{StaticResource HamburgerMenuItem}"
+        OpenPaneLength="200"
+        OptionsItemTemplate="{StaticResource HamburgerOptionsMenuItem}"
+        PaneBackground="{StaticResource MaterialDesignDarkBackground}"
+        SelectedIndex="{Binding SelectedMenuIndex.Value, Mode=TwoWay}"
+        SelectedItem="{Binding SelectedMenu.Value, Mode=TwoWay}"
+        SelectedOptionsIndex="{Binding SelectedOptionIndex.Value, Mode=TwoWay}"
+        SelectedOptionsItem="{Binding SelectedOption.Value, Mode=TwoWay}">
+
+        <metro:HamburgerMenu.ItemsSource>
+            <metro:HamburgerMenuItemCollection>
+                <metro:HamburgerMenuIconItem Label="Search">
+                    <metro:HamburgerMenuIconItem.Icon>
+                        <iconPacks:PackIconMaterial
+                            Width="16"
+                            Height="16"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Kind="FolderSearchOutline" />
+                    </metro:HamburgerMenuIconItem.Icon>
+                    <Controls:HamburgerMenuIconItem.Tag>
                         <TextBlock
-                            IsEnabled="False"
-                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                            Text="Studioバージョン:" />
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            FontSize="28"
+                            FontWeight="Bold">
+                            Search
+                        </TextBlock>
+                    </Controls:HamburgerMenuIconItem.Tag>
+                </metro:HamburgerMenuIconItem>
+                <metro:HamburgerMenuIconItem Label="Analysis">
+                    <metro:HamburgerMenuIconItem.Icon>
+                        <iconPacks:PackIconMaterial
+                            Width="16"
+                            Height="16"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Kind="GoogleAnalytics" />
+                    </metro:HamburgerMenuIconItem.Icon>
+                    <Controls:HamburgerMenuIconItem.Tag>
                         <TextBlock
-                            Margin="5,0,5,0"
-                            AutomationProperties.AutomationId="studioVersion"
-                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                            Text="{Binding Project.studioVersion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            FontSize="28"
+                            FontWeight="Bold">
+                            Search
+                        </TextBlock>
+                    </Controls:HamburgerMenuIconItem.Tag>
+                </metro:HamburgerMenuIconItem>
+            </metro:HamburgerMenuItemCollection>
+        </metro:HamburgerMenu.ItemsSource>
+        <metro:HamburgerMenu.OptionsItemsSource>
+            <metro:HamburgerMenuItemCollection>
+                <!--<metro:HamburgerMenuIconItem Label="Settings">
+                    <metro:HamburgerMenuIconItem.Icon>
+                        <iconPacks:PackIconMaterial
+                            Width="16"
+                            Height="16"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Kind="ApplicationSettings" />
+                    </metro:HamburgerMenuIconItem.Icon>
+                    <Controls:HamburgerMenuIconItem.Tag>
                         <TextBlock
-                            IsEnabled="False"
-                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                            Text="　/ Projectバージョン:" />
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            FontSize="28"
+                            FontWeight="Bold">
+                            Settings
+                        </TextBlock>
+                    </Controls:HamburgerMenuIconItem.Tag>
+                </metro:HamburgerMenuIconItem>
+                <metro:HamburgerMenuIconItem Label="About">
+                    <metro:HamburgerMenuIconItem.Icon>
+                        <iconPacks:PackIconMaterial
+                            Width="16"
+                            Height="16"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Kind="HelpBox" />
+                    </metro:HamburgerMenuIconItem.Icon>
+                    <Controls:HamburgerMenuIconItem.Tag>
                         <TextBlock
-                            Margin="5,0,5,0"
-                            AutomationProperties.AutomationId="projectVersion"
-                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                            Text="{Binding Project.projectVersion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    </StackPanel>
-                    <Grid Margin="20,0,20,0">
-                        <Grid.Resources>
-                            <Style x:Key="CleanSeparator" TargetType="lvc:Separator">
-                                <Setter Property="IsEnabled" Value="False" />
-                            </Style>
-                        </Grid.Resources>
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            FontSize="28"
+                            FontWeight="Bold">
+                            About This Apps
+                        </TextBlock>
+                    </Controls:HamburgerMenuIconItem.Tag>
+                </metro:HamburgerMenuIconItem>-->
+            </metro:HamburgerMenuItemCollection>
+        </metro:HamburgerMenu.OptionsItemsSource>
+
+        <metro:HamburgerMenu.Content>
+            <Grid x:Name="mainGrid">
+                <Grid x:Name="SearchGrid" Visibility="Hidden">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0" Margin="10">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="2*" />
-                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="auto" />
+                            <ColumnDefinition Width="auto" />
                         </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
 
-                        <materialDesign:Card
-                            Grid.Row="0"
+                        <TextBox
+                            x:Name="folderTextBox"
                             Grid.Column="0"
-                            Margin="5"
-                            Background="DarkBlue">
-                            <StackPanel Orientation="Vertical">
-                                <TextBlock
-                                    Margin="5,0,0,0"
-                                    Foreground="White"
-                                    IsEnabled="False"
-                                    Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                    Text="ワークフロー数" />
-                                <TextBlock
-                                    Margin="5,0,5,0"
-                                    Padding="5,0,5,0"
-                                    HorizontalAlignment="Right"
-                                    AutomationProperties.AutomationId="WorkflowFileCount"
-                                    Foreground="White"
-                                    Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                                    Text="{Binding WorkflowFileCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    TextAlignment="Right" />
-                            </StackPanel>
-
-                        </materialDesign:Card>
-                        <materialDesign:Card
-                            Grid.Row="0"
+                            materialDesign:HintAssist.Hint="分析対象の親フォルダを指定してください。フォルダ内に存在する全てのproject.jsonを解析します。"
+                            Style="{StaticResource MaterialDesignFloatingHintTextBox}" />
+                        <Button
+                            x:Name="folderButton"
                             Grid.Column="1"
-                            Margin="5"
-                            Background="DarkBlue">
-
-                            <StackPanel Orientation="Vertical">
-                                <TextBlock
-                                    Margin="5,0,0,0"
-                                    Foreground="White"
-                                    IsEnabled="False"
-                                    Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                    Text="変数の数" />
-                                <TextBlock
-                                    Margin="5,0,5,0"
-                                    Padding="5,0,5,0"
-                                    HorizontalAlignment="Right"
-                                    AutomationProperties.AutomationId="TotalVariableCount"
-                                    Foreground="White"
-                                    Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                                    Text="{Binding TotalVariableCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    TextAlignment="Right" />
-                            </StackPanel>
-                        </materialDesign:Card>
-                        <materialDesign:Card
-                            Grid.Row="1"
-                            Grid.Column="0"
-                            Margin="5"
-                            Background="DarkBlue">
-
-                            <StackPanel Orientation="Vertical">
-                                <TextBlock
-                                    Margin="5,0,0,0"
-                                    Foreground="White"
-                                    IsEnabled="False"
-                                    Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                    Text="アクティビティ数" />
-                                <TextBlock
-                                    Margin="5,0,5,0"
-                                    Padding="5,0,5,0"
-                                    HorizontalAlignment="Right"
-                                    AutomationProperties.AutomationId="TotalAvtivityCount"
-                                    Foreground="White"
-                                    Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                                    Text="{Binding TotalAvtivityCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    TextAlignment="Right" />
-                            </StackPanel>
-
-                        </materialDesign:Card>
-                        <materialDesign:Card
-                            Grid.Row="1"
-                            Grid.Column="1"
-                            Margin="5"
-                            Background="DarkBlue">
-
-                            <StackPanel Orientation="Vertical">
-                                <TextBlock
-                                    Margin="5,0,0,0"
-                                    Foreground="White"
-                                    IsEnabled="False"
-                                    Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                    Text="アクティビティ種類" />
-                                <TextBlock
-                                    Margin="5,0,5,0"
-                                    Padding="5,0,5,0"
-                                    HorizontalAlignment="Right"
-                                    AutomationProperties.AutomationId="TotalAvtivityKind"
-                                    Foreground="White"
-                                    Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                                    Text="{Binding TotalAvtivityKind, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    TextAlignment="Right" />
-                            </StackPanel>
-                        </materialDesign:Card>
-                        <materialDesign:Card
-                            Grid.Row="3"
-                            Grid.Column="0"
-                            Margin="5"
-                            Background="DarkBlue">
-
-                            <StackPanel Orientation="Vertical">
-                                <TextBlock
-                                    Margin="5,0,0,0"
-                                    Foreground="White"
-                                    IsEnabled="False"
-                                    Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                    Text="複雑度合計" />
-                                <TextBlock
-                                    Margin="5,0,5,0"
-                                    Padding="5,0,5,0"
-                                    HorizontalAlignment="Right"
-                                    AutomationProperties.AutomationId="TotalCyclomaticComplexity"
-                                    Foreground="White"
-                                    Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                                    Text="{Binding TotalCyclomaticComplexity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    TextAlignment="Right" />
-                            </StackPanel>
-                        </materialDesign:Card>
-                        <materialDesign:Card
-                            Grid.Row="3"
-                            Grid.Column="1"
-                            Margin="5"
-                            Background="DarkBlue">
-
-                            <StackPanel Orientation="Vertical">
-                                <TextBlock
-                                    Margin="5,0,0,0"
-                                    Foreground="White"
-                                    IsEnabled="False"
-                                    Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                    Text="ネストの深さ最大" />
-                                <TextBlock
-                                    Margin="5,0,5,0"
-                                    Padding="5,0,5,0"
-                                    HorizontalAlignment="Right"
-                                    AutomationProperties.AutomationId="MaxNestedCount"
-                                    Foreground="White"
-                                    Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                                    Text="{Binding MaxNestedCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    TextAlignment="Right" />
-                            </StackPanel>
-                        </materialDesign:Card>
-                        <Grid
-                            Grid.Row="0"
+                            Margin="10,5,10,5"
+                            Click="folderButton_Click"
+                            Content="…" />
+                        <Button
+                            x:Name="loadButton"
                             Grid.Column="2"
-                            AutomationProperties.AutomationId="ProjectScoreGrid">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="*" />
-                                <RowDefinition Height="auto" />
-                            </Grid.RowDefinitions>
-                            <!--  custom fill gauge  -->
-                            <lvc:Gauge
-                                Grid.Row="0"
-                                Margin="5"
-                                AutomationProperties.AutomationId="WorkflowScoreAverage"
-                                LabelsVisibility="Collapsed"
-                                Value="{Binding WorkflowScoreAverage}"
-                                From="0"
-                                To="100">
-                                <lvc:Gauge.GaugeActiveFill>
-                                    <LinearGradientBrush>
-                                        <GradientStop Offset="0.0" Color="Yellow" />
-                                        <GradientStop Offset="0.5" Color="Orange" />
-                                        <GradientStop Offset="1.0" Color="Red" />
-                                    </LinearGradientBrush>
-                                </lvc:Gauge.GaugeActiveFill>
-                            </lvc:Gauge>
-                            <TextBlock
-                                Grid.Row="1"
-                                AutomationProperties.AutomationId="プロジェクトスコア"
-                                IsEnabled="False"
-                                Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                Text="プロジェクトスコア"
-                                TextAlignment="Center" />
-                        </Grid>
-
-                        <!--<lvc:PieChart
-                            x:Name="pieChart"
-                            Grid.Row="1"
-                            Grid.RowSpan="2"
-                            Grid.Column="2"
-                            Grid.ColumnSpan="2"
-                            Height="170"
-                            DataClick="Chart_OnDataClick"
-                            DataTooltip="{x:Null}"
-                            Hoverable="False"
-                            LegendLocation="Bottom"
-                            Series="{Binding PieSeriesCollection}" />-->
-
-                        <materialDesign:Card
-                            Grid.Row="0"
-                            Grid.Column="3"
-                            Margin="40,10,40,10"
-                            Background="OrangeRed">
-                            <StackPanel Orientation="Vertical">
-                                <TextBlock
-                                    Margin="5,0,0,0"
-                                    Foreground="White"
-                                    IsEnabled="False"
-                                    Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                    Text="Bad ワークフロー数" />
-                                <TextBlock
-                                    Margin="5,0,5,0"
-                                    Padding="5,0,5,0"
-                                    HorizontalAlignment="Right"
-                                    AutomationProperties.AutomationId="BadWorkflowFileCount"
-                                    Foreground="White"
-                                    Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                                    Text="{Binding BadWorkflowFileCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    TextAlignment="Right" />
-                            </StackPanel>
-
-                        </materialDesign:Card>
-                        <lvc:CartesianChart
-                            x:Name="multiLineChart"
-                            Grid.Row="1"
-                            Grid.RowSpan="2"
-                            Grid.Column="2"
-                            Grid.ColumnSpan="2">
-                            <lvc:CartesianChart.AxisX>
-                                <lvc:Axis Labels="{Binding MultiChartLabels}" ShowLabels="False" />
-                            </lvc:CartesianChart.AxisX>
-                            <lvc:CartesianChart.AxisY>
-                                <lvc:Axis
-                                    Title="Score"
-                                    Foreground="DodgerBlue"
-                                    Position="LeftBottom" />
-                                <lvc:Axis
-                                    Title="Activity数"
-                                    Foreground="IndianRed"
-                                    Position="LeftBottom">
-                                    <lvc:Axis.Separator>
-                                        <lvc:Separator Style="{StaticResource CleanSeparator}" />
-                                    </lvc:Axis.Separator>
-                                </lvc:Axis>
-                                <lvc:Axis
-                                    Title="複雑度"
-                                    Foreground="DarkOliveGreen"
-                                    Position="RightTop">
-                                    <lvc:Axis.Separator>
-                                        <lvc:Separator Style="{StaticResource CleanSeparator}" />
-                                    </lvc:Axis.Separator>
-                                </lvc:Axis>
-                                <lvc:Axis
-                                    Title="ネストの深さ"
-                                    Foreground="BlueViolet"
-                                    Position="RightTop">
-                                    <lvc:Axis.Separator>
-                                        <lvc:Separator Style="{StaticResource CleanSeparator}" />
-                                    </lvc:Axis.Separator>
-                                </lvc:Axis>
-
-                            </lvc:CartesianChart.AxisY>
-                            <lvc:CartesianChart.Series>
-                                <lvc:LineSeries
-                                    Title="Score"
-                                    ScalesYAt="0"
-                                    Values="{Binding ScoreList}" />
-                                <lvc:LineSeries
-                                    Title="Activity数"
-                                    ScalesYAt="1"
-                                    Values="{Binding ActivityCountList}" />
-                                <lvc:LineSeries
-                                    Title="複雑度"
-                                    ScalesYAt="2"
-                                    Values="{Binding ComplexityList}" />
-                                <lvc:LineSeries
-                                    Title="ネストの深さ"
-                                    ScalesYAt="3"
-                                    Values="{Binding NestedCountList}" />
-                            </lvc:CartesianChart.Series>
-                        </lvc:CartesianChart>
+                            Margin="0,5,5,5"
+                            Click="loadButton_Click"
+                            Content="読込" />
                     </Grid>
-
-                </StackPanel>
-            </materialDesign:Card>
-        </Grid>
-
-        <ListView
-            x:Name="listView"
-            Grid.Row="2"
-            Grid.Column="0"
-            Grid.ColumnSpan="2"
-            Margin="5"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch"
-            ItemsSource="{Binding}"
-            SelectionChanged="listView_SelectionChanged">
-            <ListView.Resources>
-                <Style x:Key="HeaderStyle" TargetType="GridViewColumnHeader">
-                    <Setter Property="FontSize" Value="12" />
-                </Style>
-            </ListView.Resources>
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn
-                        Width="120"
-                        DisplayMemberBinding="{Binding Path=FileName}"
-                        Header="ファイル名" />
-                    <GridViewColumn
-                        Width="120"
-                        DisplayMemberBinding="{Binding Path=WorkflowScore}"
-                        Header="スコア" />
-                    <GridViewColumn
-                        Width="130"
-                        DisplayMemberBinding="{Binding Path=VariableCount}"
-                        Header="変数の数" />
-                    <GridViewColumn
-                        Width="130"
-                        DisplayMemberBinding="{Binding Path=ActivityCount}"
-                        Header="Activity数" />
-                    <GridViewColumn
-                        Width="140"
-                        DisplayMemberBinding="{Binding Path=ActivityKind}"
-                        Header="Activity種類" />
-                    <GridViewColumn
-                        Width="120"
-                        DisplayMemberBinding="{Binding Path=CyclomaticComplexity}"
-                        Header="複雑度" />
-                    <GridViewColumn
-                        Width="120"
-                        DisplayMemberBinding="{Binding Path=NestedCount}"
-                        Header="ネスト深さ" />
-                    <GridViewColumn
-                        Width="120"
-                        DisplayMemberBinding="{Binding Path=TryCatchCount}"
-                        Header="TryCatch" />
-                    <GridViewColumn
-                        Width="130"
-                        DisplayMemberBinding="{Binding Path=RetryScopeCount}"
-                        Header="RetryScope" />
-                    <GridViewColumn
-                        Width="130"
-                        DisplayMemberBinding="{Binding Path=DelayCount}"
-                        Header="Delay" />
-                    <GridViewColumn
-                        Width="130"
-                        DisplayMemberBinding="{Binding Path=LogCount}"
-                        Header="Log" />
-                    <GridViewColumn
-                        Width="130"
-                        DisplayMemberBinding="{Binding Path=AnnotationCount}"
-                        Header="注釈" />
-                </GridView>
-            </ListView.View>
-        </ListView>
-
-        <Grid Grid.Row="0" Grid.Column="1">
-            <Grid Margin="10">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="auto" />
-                    <ColumnDefinition Width="auto" />
-                </Grid.ColumnDefinitions>
-
-                <Button
-                    x:Name="exportButton"
-                    Grid.Column="1"
-                    Margin="10,5,10,5"
-                    Click="exportButton_Click"
-                    Content="出力" />
-
-                <Button
-                    x:Name="settingButton"
-                    Grid.Column="2"
-                    Margin="0,5,5,5"
-                    Click="settingButton_Click"
-                    Content="設定" />
-            </Grid>
-        </Grid>
-
-        <Grid Grid.Row="1" Grid.Column="1">
-            <TabControl Style="{StaticResource MahApps.Styles.TabControl.AnimatedSingleRow}">
-                <TabItem Controls:HeaderedControlHelper.HeaderFontSize="14" Header="依存関係ライブラリ">
-                    <Grid Grid.Row="0" Grid.RowSpan="2">
-                        <ListView
-                            x:Name="libraryListView"
-                            Grid.Row="1"
-                            Margin="5"
-                            HorizontalAlignment="Stretch"
-                            VerticalAlignment="Stretch"
-                            ItemsSource="{Binding}">
-                            <ListView.View>
-                                <GridView>
-                                    <GridViewColumn
-                                        Width="200"
-                                        DisplayMemberBinding="{Binding Path=LibraryName}"
-                                        Header="ライブラリ名" />
-                                    <GridViewColumn
-                                        Width="150"
-                                        DisplayMemberBinding="{Binding Path=Version}"
-                                        Header="バージョン" />
-                                </GridView>
-                            </ListView.View>
-                        </ListView>
-                    </Grid>
-                </TabItem>
-                <TabItem Controls:HeaderedControlHelper.HeaderFontSize="14" Header="呼び出し階層">
-                    <TreeView
-                        x:Name="CTreeView"
-                        Grid.Row="0"
-                        Grid.RowSpan="2"
-                        FontSize="14"
-                        Style="{StaticResource MaterialDesignTreeView}">
-                        <TreeView.ItemTemplate>
-                            <HierarchicalDataTemplate DataType="model:CallHierarchy" ItemsSource="{Binding CallHierarchies}">
-                                <TextBlock Text="{Binding Name}" />
-                            </HierarchicalDataTemplate>
-                        </TreeView.ItemTemplate>
-                        <TreeView.ItemContainerStyle>
-                            <Style TargetType="{x:Type TreeViewItem}">
-                                <Setter Property="IsExpanded" Value="True" />
+                    <ListView
+                        x:Name="projectListView"
+                        Grid.Row="1"
+                        Margin="5"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        ItemsSource="{Binding}"
+                        SelectionChanged="projectListView_SelectionChanged">
+                        <ListView.Resources>
+                            <Style x:Key="HeaderStyle" TargetType="GridViewColumnHeader">
+                                <Setter Property="FontSize" Value="12" />
                             </Style>
-                        </TreeView.ItemContainerStyle>
-                    </TreeView>
-                </TabItem>
-                <TabItem Controls:HeaderedControlHelper.HeaderFontSize="14" Header="Activity一覧">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="2*" />
-                            <RowDefinition Height="3*" />
-                        </Grid.RowDefinitions>
-                        <lvc:CartesianChart
-                            x:Name="cartesianChart"
-                            Grid.Row="0"
-                            LegendLocation="Bottom"
-                            Series="{Binding SeriesCollection}">
-                            <lvc:CartesianChart.AxisX>
-                                <lvc:Axis Title="Count" LabelFormatter="{Binding Formatter}" />
-                            </lvc:CartesianChart.AxisX>
-                            <lvc:CartesianChart.AxisY>
-                                <lvc:Axis
-                                    Title="Activity"
-                                    Labels="{Binding Labels}"
-                                    ShowLabels="True">
-                                    <lvc:Axis.Separator>
-                                        <lvc:Separator Step="1" />
-                                    </lvc:Axis.Separator>
-                                </lvc:Axis>
-                            </lvc:CartesianChart.AxisY>
-                            <lvc:CartesianChart.DataTooltip>
-                                <lvc:DefaultTooltip SelectionMode="SharedYValues" />
-                            </lvc:CartesianChart.DataTooltip>
-                        </lvc:CartesianChart>
-                        <ListView
-                            x:Name="activityListView"
+                        </ListView.Resources>
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn
+                                    Width="150"
+                                    DisplayMemberBinding="{Binding Path=Project.name}"
+                                    Header="プロジェクト名" />
+                                <GridViewColumn
+                                    Width="150"
+                                    DisplayMemberBinding="{Binding Path=Project.description}"
+                                    Header="プロジェクト説明" />
+                                <GridViewColumn
+                                    Width="130"
+                                    DisplayMemberBinding="{Binding Path=WorkflowScoreAverage}"
+                                    Header="Score" />
+                                <GridViewColumn
+                                    Width="120"
+                                    DisplayMemberBinding="{Binding Path=WorkflowFileCount}"
+                                    Header="WF数" />
+                                <GridViewColumn
+                                    Width="140"
+                                    DisplayMemberBinding="{Binding Path=BadWorkflowFileCount}"
+                                    Header="Bad WF数" />
+                                <GridViewColumn
+                                    Width="150"
+                                    DisplayMemberBinding="{Binding Path=TotalAvtivityCount}"
+                                    Header="合計Activity数" />
+                                <GridViewColumn
+                                    Width="120"
+                                    DisplayMemberBinding="{Binding Path=TotalCyclomaticComplexity}"
+                                    Header="複雑度" />
+                                <GridViewColumn
+                                    Width="130"
+                                    DisplayMemberBinding="{Binding Path=MaxNestedCount}"
+                                    Header="ネスト数" />
+                                <GridViewColumn
+                                    Width="130"
+                                    DisplayMemberBinding="{Binding Path=Project.projectVersion}"
+                                    Header="Project Ver" />
+                                <GridViewColumn
+                                    Width="130"
+                                    DisplayMemberBinding="{Binding Path=Project.studioVersion}"
+                                    Header="Studio Ver" />
+                                <GridViewColumn
+                                    Width="190"
+                                    DisplayMemberBinding="{Binding Path=ProjectFolderPath}"
+                                    Header="プロジェクトフォルダパス" />
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </Grid>
+                <Grid x:Name="AnalysisGrid" Visibility="Visible">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="3*" />
+                        <ColumnDefinition Width="2*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="3*" />
+                        <RowDefinition Height="2*" />
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0" Grid.Column="0">
+                        <materialDesign:Card
                             Grid.Row="1"
-                            Margin="5"
-                            HorizontalAlignment="Stretch"
-                            VerticalAlignment="Stretch"
-                            ItemsSource="{Binding}">
-                            <ListView.View>
-                                <GridView>
-                                    <GridViewColumn
-                                        Width="150"
-                                        DisplayMemberBinding="{Binding Path=ActivityName}"
-                                        Header="アクティビティ" />
-                                    <GridViewColumn
-                                        Width="150"
-                                        DisplayMemberBinding="{Binding Path=DisplayName}"
-                                        Header="表示名" />
-                                    <GridViewColumn
-                                        Width="200"
-                                        DisplayMemberBinding="{Binding Path=AnnotationText}"
-                                        Header="注釈" />
+                            Margin="10"
+                            Padding="10">
+                            <StackPanel
+                                x:Name="projectPanel"
+                                AutomationProperties.AutomationId="projectPanel"
+                                Orientation="Vertical">
+                                <TextBlock
+                                    AutomationProperties.AutomationId="projectName"
+                                    FontWeight="Bold"
+                                    Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                    Text="{Binding Project.name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <Separator Margin="8,0,8,0" Style="{StaticResource MaterialDesignDarkSeparator}" />
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock
+                                        IsEnabled="False"
+                                        Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                        Text="Studioバージョン:" />
+                                    <TextBlock
+                                        Margin="5,0,5,0"
+                                        AutomationProperties.AutomationId="studioVersion"
+                                        Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                        Text="{Binding Project.studioVersion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBlock
+                                        IsEnabled="False"
+                                        Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                        Text="　/ Projectバージョン:" />
+                                    <TextBlock
+                                        Margin="5,0,5,0"
+                                        AutomationProperties.AutomationId="projectVersion"
+                                        Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                        Text="{Binding Project.projectVersion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                                <Grid Margin="20,0,20,0">
+                                    <Grid.Resources>
+                                        <Style x:Key="CleanSeparator" TargetType="lvc:Separator">
+                                            <Setter Property="IsEnabled" Value="False" />
+                                        </Style>
+                                    </Grid.Resources>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="2*" />
+                                        <ColumnDefinition Width="2*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
 
-                                </GridView>
-                            </ListView.View>
-                        </ListView>
-                    </Grid>
-                </TabItem>
-                <TabItem Controls:HeaderedControlHelper.HeaderFontSize="14" Header="変数一覧">
-                    <Grid Grid.Row="0" Grid.RowSpan="2">
-                        <ListView
-                            x:Name="variableListView"
-                            Grid.Row="1"
-                            Margin="5"
-                            HorizontalAlignment="Stretch"
-                            VerticalAlignment="Stretch"
-                            ItemsSource="{Binding}">
-                            <ListView.View>
-                                <GridView>
-                                    <GridViewColumn
-                                        Width="110"
-                                        DisplayMemberBinding="{Binding Path=Name}"
-                                        Header="変数名" />
-                                    <GridViewColumn
-                                        Width="110"
-                                        DisplayMemberBinding="{Binding Path=TypeArguments}"
-                                        Header="型" />
-                                    <GridViewColumn
-                                        Width="200"
-                                        DisplayMemberBinding="{Binding Path=AnnotationText}"
-                                        Header="注釈" />
-                                </GridView>
-                            </ListView.View>
-                        </ListView>
-                    </Grid>
-                </TabItem>
-            </TabControl>
-        </Grid>
+                                    <materialDesign:Card
+                                        Grid.Row="0"
+                                        Grid.Column="0"
+                                        Margin="5"
+                                        Background="DarkBlue">
+                                        <StackPanel Orientation="Vertical">
+                                            <TextBlock
+                                                Margin="5,0,0,0"
+                                                Foreground="White"
+                                                IsEnabled="False"
+                                                Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                                Text="ワークフロー数" />
+                                            <TextBlock
+                                                Margin="5,0,5,0"
+                                                Padding="5,0,5,0"
+                                                HorizontalAlignment="Right"
+                                                AutomationProperties.AutomationId="WorkflowFileCount"
+                                                Foreground="White"
+                                                Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                                                Text="{Binding WorkflowFileCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                TextAlignment="Right" />
+                                        </StackPanel>
 
-    </Grid>
+                                    </materialDesign:Card>
+                                    <materialDesign:Card
+                                        Grid.Row="0"
+                                        Grid.Column="1"
+                                        Margin="5"
+                                        Background="DarkBlue">
+
+                                        <StackPanel Orientation="Vertical">
+                                            <TextBlock
+                                                Margin="5,0,0,0"
+                                                Foreground="White"
+                                                IsEnabled="False"
+                                                Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                                Text="変数の数" />
+                                            <TextBlock
+                                                Margin="5,0,5,0"
+                                                Padding="5,0,5,0"
+                                                HorizontalAlignment="Right"
+                                                AutomationProperties.AutomationId="TotalVariableCount"
+                                                Foreground="White"
+                                                Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                                                Text="{Binding TotalVariableCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                TextAlignment="Right" />
+                                        </StackPanel>
+                                    </materialDesign:Card>
+                                    <materialDesign:Card
+                                        Grid.Row="1"
+                                        Grid.Column="0"
+                                        Margin="5"
+                                        Background="DarkBlue">
+
+                                        <StackPanel Orientation="Vertical">
+                                            <TextBlock
+                                                Margin="5,0,0,0"
+                                                Foreground="White"
+                                                IsEnabled="False"
+                                                Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                                Text="アクティビティ数" />
+                                            <TextBlock
+                                                Margin="5,0,5,0"
+                                                Padding="5,0,5,0"
+                                                HorizontalAlignment="Right"
+                                                AutomationProperties.AutomationId="TotalAvtivityCount"
+                                                Foreground="White"
+                                                Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                                                Text="{Binding TotalAvtivityCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                TextAlignment="Right" />
+                                        </StackPanel>
+
+                                    </materialDesign:Card>
+                                    <materialDesign:Card
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        Margin="5"
+                                        Background="DarkBlue">
+
+                                        <StackPanel Orientation="Vertical">
+                                            <TextBlock
+                                                Margin="5,0,0,0"
+                                                Foreground="White"
+                                                IsEnabled="False"
+                                                Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                                Text="アクティビティ種類" />
+                                            <TextBlock
+                                                Margin="5,0,5,0"
+                                                Padding="5,0,5,0"
+                                                HorizontalAlignment="Right"
+                                                AutomationProperties.AutomationId="TotalAvtivityKind"
+                                                Foreground="White"
+                                                Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                                                Text="{Binding TotalAvtivityKind, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                TextAlignment="Right" />
+                                        </StackPanel>
+                                    </materialDesign:Card>
+                                    <materialDesign:Card
+                                        Grid.Row="3"
+                                        Grid.Column="0"
+                                        Margin="5"
+                                        Background="DarkBlue">
+
+                                        <StackPanel Orientation="Vertical">
+                                            <TextBlock
+                                                Margin="5,0,0,0"
+                                                Foreground="White"
+                                                IsEnabled="False"
+                                                Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                                Text="複雑度合計" />
+                                            <TextBlock
+                                                Margin="5,0,5,0"
+                                                Padding="5,0,5,0"
+                                                HorizontalAlignment="Right"
+                                                AutomationProperties.AutomationId="TotalCyclomaticComplexity"
+                                                Foreground="White"
+                                                Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                                                Text="{Binding TotalCyclomaticComplexity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                TextAlignment="Right" />
+                                        </StackPanel>
+                                    </materialDesign:Card>
+                                    <materialDesign:Card
+                                        Grid.Row="3"
+                                        Grid.Column="1"
+                                        Margin="5"
+                                        Background="DarkBlue">
+
+                                        <StackPanel Orientation="Vertical">
+                                            <TextBlock
+                                                Margin="5,0,0,0"
+                                                Foreground="White"
+                                                IsEnabled="False"
+                                                Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                                Text="ネストの深さ最大" />
+                                            <TextBlock
+                                                Margin="5,0,5,0"
+                                                Padding="5,0,5,0"
+                                                HorizontalAlignment="Right"
+                                                AutomationProperties.AutomationId="MaxNestedCount"
+                                                Foreground="White"
+                                                Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                                                Text="{Binding MaxNestedCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                TextAlignment="Right" />
+                                        </StackPanel>
+                                    </materialDesign:Card>
+                                    <Grid
+                                        Grid.Row="0"
+                                        Grid.Column="2"
+                                        AutomationProperties.AutomationId="ProjectScoreGrid">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="auto" />
+                                        </Grid.RowDefinitions>
+                                        <!--  custom fill gauge  -->
+                                        <lvc:Gauge
+                                            Grid.Row="0"
+                                            Margin="5"
+                                            AutomationProperties.AutomationId="WorkflowScoreAverage"
+                                            LabelsVisibility="Collapsed"
+                                            Value="{Binding WorkflowScoreAverage}"
+                                            From="0"
+                                            To="100">
+                                            <lvc:Gauge.GaugeActiveFill>
+                                                <LinearGradientBrush>
+                                                    <GradientStop Offset="0.0" Color="Yellow" />
+                                                    <GradientStop Offset="0.5" Color="Orange" />
+                                                    <GradientStop Offset="1.0" Color="Red" />
+                                                </LinearGradientBrush>
+                                            </lvc:Gauge.GaugeActiveFill>
+                                        </lvc:Gauge>
+                                        <TextBlock
+                                            Grid.Row="1"
+                                            AutomationProperties.AutomationId="プロジェクトスコア"
+                                            IsEnabled="False"
+                                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                            Text="プロジェクトスコア"
+                                            TextAlignment="Center" />
+                                    </Grid>
+
+                                    <materialDesign:Card
+                                        Grid.Row="0"
+                                        Grid.Column="3"
+                                        Margin="40,10,40,10"
+                                        Background="OrangeRed">
+                                        <StackPanel Orientation="Vertical">
+                                            <TextBlock
+                                                Margin="5,0,0,0"
+                                                Foreground="White"
+                                                IsEnabled="False"
+                                                Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                                Text="Bad ワークフロー数" />
+                                            <TextBlock
+                                                Margin="5,0,5,0"
+                                                Padding="5,0,5,0"
+                                                HorizontalAlignment="Right"
+                                                AutomationProperties.AutomationId="BadWorkflowFileCount"
+                                                Foreground="White"
+                                                Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                                                Text="{Binding BadWorkflowFileCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                TextAlignment="Right" />
+                                        </StackPanel>
+
+                                    </materialDesign:Card>
+                                    <lvc:CartesianChart
+                                        x:Name="multiLineChart"
+                                        Grid.Row="1"
+                                        Grid.RowSpan="2"
+                                        Grid.Column="2"
+                                        Grid.ColumnSpan="2">
+                                        <lvc:CartesianChart.AxisX>
+                                            <lvc:Axis Labels="{Binding MultiChartLabels}" ShowLabels="False" />
+                                        </lvc:CartesianChart.AxisX>
+                                        <lvc:CartesianChart.AxisY>
+                                            <lvc:Axis
+                                                Title="Score"
+                                                Foreground="DodgerBlue"
+                                                Position="LeftBottom" />
+                                            <lvc:Axis
+                                                Title="Activity数"
+                                                Foreground="IndianRed"
+                                                Position="LeftBottom">
+                                                <lvc:Axis.Separator>
+                                                    <lvc:Separator Style="{StaticResource CleanSeparator}" />
+                                                </lvc:Axis.Separator>
+                                            </lvc:Axis>
+                                            <lvc:Axis
+                                                Title="複雑度"
+                                                Foreground="DarkOliveGreen"
+                                                Position="RightTop">
+                                                <lvc:Axis.Separator>
+                                                    <lvc:Separator Style="{StaticResource CleanSeparator}" />
+                                                </lvc:Axis.Separator>
+                                            </lvc:Axis>
+                                            <lvc:Axis
+                                                Title="ネストの深さ"
+                                                Foreground="BlueViolet"
+                                                Position="RightTop">
+                                                <lvc:Axis.Separator>
+                                                    <lvc:Separator Style="{StaticResource CleanSeparator}" />
+                                                </lvc:Axis.Separator>
+                                            </lvc:Axis>
+
+                                        </lvc:CartesianChart.AxisY>
+                                        <lvc:CartesianChart.Series>
+                                            <lvc:LineSeries
+                                                Title="Score"
+                                                ScalesYAt="0"
+                                                Values="{Binding ScoreList}" />
+                                            <lvc:LineSeries
+                                                Title="Activity数"
+                                                ScalesYAt="1"
+                                                Values="{Binding ActivityCountList}" />
+                                            <lvc:LineSeries
+                                                Title="複雑度"
+                                                ScalesYAt="2"
+                                                Values="{Binding ComplexityList}" />
+                                            <lvc:LineSeries
+                                                Title="ネストの深さ"
+                                                ScalesYAt="3"
+                                                Values="{Binding NestedCountList}" />
+                                        </lvc:CartesianChart.Series>
+                                    </lvc:CartesianChart>
+                                </Grid>
+
+                            </StackPanel>
+                        </materialDesign:Card>
+                    </Grid>
+                    <ListView
+                        x:Name="listView"
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="2"
+                        Margin="5"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        ItemsSource="{Binding}"
+                        SelectionChanged="listView_SelectionChanged">
+                        <ListView.Resources>
+                            <Style x:Key="HeaderStyle" TargetType="GridViewColumnHeader">
+                                <Setter Property="FontSize" Value="12" />
+                            </Style>
+                        </ListView.Resources>
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn
+                                    Width="120"
+                                    DisplayMemberBinding="{Binding Path=FileName}"
+                                    Header="ファイル名" />
+                                <GridViewColumn
+                                    Width="120"
+                                    DisplayMemberBinding="{Binding Path=WorkflowScore}"
+                                    Header="スコア" />
+                                <GridViewColumn
+                                    Width="130"
+                                    DisplayMemberBinding="{Binding Path=VariableCount}"
+                                    Header="変数の数" />
+                                <GridViewColumn
+                                    Width="130"
+                                    DisplayMemberBinding="{Binding Path=ActivityCount}"
+                                    Header="Activity数" />
+                                <GridViewColumn
+                                    Width="140"
+                                    DisplayMemberBinding="{Binding Path=ActivityKind}"
+                                    Header="Activity種類" />
+                                <GridViewColumn
+                                    Width="120"
+                                    DisplayMemberBinding="{Binding Path=CyclomaticComplexity}"
+                                    Header="複雑度" />
+                                <GridViewColumn
+                                    Width="120"
+                                    DisplayMemberBinding="{Binding Path=NestedCount}"
+                                    Header="ネスト深さ" />
+                                <GridViewColumn
+                                    Width="120"
+                                    DisplayMemberBinding="{Binding Path=TryCatchCount}"
+                                    Header="TryCatch" />
+                                <GridViewColumn
+                                    Width="130"
+                                    DisplayMemberBinding="{Binding Path=RetryScopeCount}"
+                                    Header="RetryScope" />
+                                <GridViewColumn
+                                    Width="130"
+                                    DisplayMemberBinding="{Binding Path=DelayCount}"
+                                    Header="Delay" />
+                                <GridViewColumn
+                                    Width="130"
+                                    DisplayMemberBinding="{Binding Path=LogCount}"
+                                    Header="Log" />
+                                <GridViewColumn
+                                    Width="130"
+                                    DisplayMemberBinding="{Binding Path=AnnotationCount}"
+                                    Header="注釈" />
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                    <Grid Grid.Row="0" Grid.Column="1">
+                        <TabControl Margin="10" Style="{StaticResource MahApps.Styles.TabControl.AnimatedSingleRow}">
+                            <TabItem Controls:HeaderedControlHelper.HeaderFontSize="14" Header="Activity一覧">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="2*" />
+                                        <RowDefinition Height="3*" />
+                                    </Grid.RowDefinitions>
+                                    <lvc:CartesianChart
+                                        x:Name="cartesianChart"
+                                        Grid.Row="0"
+                                        LegendLocation="Bottom"
+                                        Series="{Binding SeriesCollection}">
+                                        <lvc:CartesianChart.AxisX>
+                                            <lvc:Axis Title="Count" LabelFormatter="{Binding Formatter}" />
+                                        </lvc:CartesianChart.AxisX>
+                                        <lvc:CartesianChart.AxisY>
+                                            <lvc:Axis
+                                                Title="Activity"
+                                                Labels="{Binding Labels}"
+                                                ShowLabels="True">
+                                                <lvc:Axis.Separator>
+                                                    <lvc:Separator Step="1" />
+                                                </lvc:Axis.Separator>
+                                            </lvc:Axis>
+                                        </lvc:CartesianChart.AxisY>
+                                        <lvc:CartesianChart.DataTooltip>
+                                            <lvc:DefaultTooltip SelectionMode="SharedYValues" />
+                                        </lvc:CartesianChart.DataTooltip>
+                                    </lvc:CartesianChart>
+                                    <ListView
+                                        x:Name="activityListView"
+                                        Grid.Row="1"
+                                        Margin="5"
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Stretch"
+                                        ItemsSource="{Binding}">
+                                        <ListView.View>
+                                            <GridView>
+                                                <GridViewColumn
+                                                    Width="150"
+                                                    DisplayMemberBinding="{Binding Path=ActivityName}"
+                                                    Header="アクティビティ" />
+                                                <GridViewColumn
+                                                    Width="150"
+                                                    DisplayMemberBinding="{Binding Path=DisplayName}"
+                                                    Header="表示名" />
+                                                <GridViewColumn
+                                                    Width="200"
+                                                    DisplayMemberBinding="{Binding Path=AnnotationText}"
+                                                    Header="注釈" />
+
+                                            </GridView>
+                                        </ListView.View>
+                                    </ListView>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Controls:HeaderedControlHelper.HeaderFontSize="14" Header="変数一覧">
+                                <Grid Grid.Row="0" Grid.RowSpan="2">
+                                    <ListView
+                                        x:Name="variableListView"
+                                        Grid.Row="1"
+                                        Margin="5"
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Stretch"
+                                        ItemsSource="{Binding}">
+                                        <ListView.View>
+                                            <GridView>
+                                                <GridViewColumn
+                                                    Width="110"
+                                                    DisplayMemberBinding="{Binding Path=Name}"
+                                                    Header="変数名" />
+                                                <GridViewColumn
+                                                    Width="110"
+                                                    DisplayMemberBinding="{Binding Path=TypeArguments}"
+                                                    Header="型" />
+                                                <GridViewColumn
+                                                    Width="200"
+                                                    DisplayMemberBinding="{Binding Path=AnnotationText}"
+                                                    Header="注釈" />
+                                            </GridView>
+                                        </ListView.View>
+                                    </ListView>
+                                </Grid>
+                            </TabItem>
+
+                            <TabItem Controls:HeaderedControlHelper.HeaderFontSize="14" Header="依存関係ライブラリ">
+                                <Grid Grid.Row="0" Grid.RowSpan="2">
+                                    <ListView
+                                        x:Name="libraryListView"
+                                        Grid.Row="1"
+                                        Margin="5"
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Stretch"
+                                        ItemsSource="{Binding}">
+                                        <ListView.View>
+                                            <GridView>
+                                                <GridViewColumn
+                                                    Width="200"
+                                                    DisplayMemberBinding="{Binding Path=LibraryName}"
+                                                    Header="ライブラリ名" />
+                                                <GridViewColumn
+                                                    Width="150"
+                                                    DisplayMemberBinding="{Binding Path=Version}"
+                                                    Header="バージョン" />
+                                            </GridView>
+                                        </ListView.View>
+                                    </ListView>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Controls:HeaderedControlHelper.HeaderFontSize="14" Header="呼び出し階層">
+                                <TreeView
+                                    x:Name="CTreeView"
+                                    Grid.Row="0"
+                                    Grid.RowSpan="2"
+                                    FontSize="14"
+                                    Style="{StaticResource MaterialDesignTreeView}">
+                                    <TreeView.ItemTemplate>
+                                        <HierarchicalDataTemplate DataType="model:CallHierarchy" ItemsSource="{Binding CallHierarchies}">
+                                            <TextBlock Text="{Binding Name}" />
+                                        </HierarchicalDataTemplate>
+                                    </TreeView.ItemTemplate>
+                                    <TreeView.ItemContainerStyle>
+                                        <Style TargetType="{x:Type TreeViewItem}">
+                                            <Setter Property="IsExpanded" Value="True" />
+                                        </Style>
+                                    </TreeView.ItemContainerStyle>
+                                </TreeView>
+                            </TabItem>
+                        </TabControl>
+                    </Grid>
+                </Grid>
+                <Controls:ProgressRing x:Name="progress" IsActive="false" />
+            </Grid>
+
+        </metro:HamburgerMenu.Content>
+    </metro:HamburgerMenu>
+
 </Controls:MetroWindow>

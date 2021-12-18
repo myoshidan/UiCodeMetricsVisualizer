@@ -73,7 +73,8 @@ namespace UiPathProjectAnalyser
             this.WorkflowFileCount = this.XamlFiles.Count();
             foreach (var file in XamlFiles)
             {
-                if (Path.GetFileNameWithoutExtension(file) != "GlobalHandlerX"){
+                if (Path.GetFileNameWithoutExtension(file) != "GlobalHandlerX" && 
+                    !Path.GetFileNameWithoutExtension(file).StartsWith("~")){
                     WorkFlows.Add(new UiPathWorkFlow(file));
                 }
             }
