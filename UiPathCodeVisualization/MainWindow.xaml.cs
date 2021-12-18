@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using UiPathProjectAnalyser.Excel;
 using UiPathProjectAnalyser.Models;
 
 namespace UiPathCodeVisualization
@@ -173,5 +174,20 @@ namespace UiPathCodeVisualization
             hamburgerMenu.SelectedIndex = 1;
         }
 
+        private async void exportButton_Click(object sender, RoutedEventArgs e)
+        {
+            var save_dlg = new CommonOpenFileDialog();
+            save_dlg.Title = "保存先Excelファイル名を指定してください";
+            save_dlg.DefaultFileName = $"UiPathプロジェクト一覧_{DateTime.Now.ToString("yyyyMMddHHmmss")}.xlsx";
+            save_dlg.Filters.Add(new CommonFileDialogFilter("Excelファイル", "*.xlsx"));
+            save_dlg.RestoreDirectory = true;
+
+            if (save_dlg.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                var excelinstance = new ExportReportExcel(UiPathProjects.ToList(), save_dlg.FileName);
+                excelinstance.CreateProjectListSheets();
+                await this.ShowMessageAsync("保存成功", "Excelファイル出力が完了しました。");
+            }
+        }
     }
 }
