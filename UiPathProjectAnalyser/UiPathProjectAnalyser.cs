@@ -86,7 +86,7 @@ namespace UiPathProjectAnalyser
             this.TotalCyclomaticComplexity = WorkFlows.Select(x => x.CyclomaticComplexity).Sum();
             this.TotalAvtivityKind= WorkFlows.SelectMany(x => x.ActivityLists).GroupBy(p => p.ActivityName).Count();
             //this.WorkflowScoreAverage = (int)WorkFlows.Select(x => x.WorkflowScore).Average();
-            this.BadWorkflowFileCount = (int)WorkFlows.Where(x => x.WorkflowScore < 50).Count();
+            //this.BadWorkflowFileCount = (int)WorkFlows.Where(x => x.WorkflowScore < 50).Count();
             this.CallHierarchies = FetchCallHierarchy(this.Project.main);
         }
 

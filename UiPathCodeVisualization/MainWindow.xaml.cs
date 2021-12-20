@@ -109,7 +109,9 @@ namespace UiPathCodeVisualization
                                                      ProjectScoreHelper.ComplexityScore(workflow.CyclomaticComplexity) +
                                                      ProjectScoreHelper.DepthScore(workflow.NestedCount);
                         }
+                        project.WorkFlows = new ObservableCollection<UiPathWorkFlow>(project.WorkFlows.OrderBy(p => p.WorkflowScore));
                         project.WorkflowScoreAverage = (int)project.WorkFlows.Select(x => x.WorkflowScore).Average();
+                        project.BadWorkflowFileCount = (int)project.WorkFlows.Where(x => x.WorkflowScore < 50).Count();
                         UiPathProjects.Add(project);
                     }
                 });
