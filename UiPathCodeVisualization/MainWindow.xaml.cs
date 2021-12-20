@@ -101,7 +101,16 @@ namespace UiPathCodeVisualization
                 {
                     foreach (var projectJsonFile in projectJsonList)
                     {
-                        UiPathProjects.Add(new UiPathProjectAnalyser.UiPathProjectAnalyser(projectJsonFile));
+                        var project = new UiPathProjectAnalyser.UiPathProjectAnalyser(projectJsonFile);
+                        foreach (var workflow in project.WorkFlows)
+                        {
+                            workflow.WorkflowScore = ProjectScoreHelper.VariableScore(workflow.VariableCount) +
+                                                     ProjectScoreHelper.ActivityScore(workflow.ActivityCount) +
+                                                     ProjectScoreHelper.ComplexityScore(workflow.CyclomaticComplexity) +
+                                                     ProjectScoreHelper.DepthScore(workflow.NestedCount);
+                        }
+                        project.WorkflowScoreAverage = (int)project.WorkFlows.Select(x => x.WorkflowScore).Average();
+                        UiPathProjects.Add(project);
                     }
                 });
 
@@ -146,15 +155,32 @@ namespace UiPathCodeVisualization
                 case "Search":
                     SearchGrid.Visibility = Visibility.Visible;
                     AnalysisGrid.Visibility = Visibility.Hidden;
+                    SettingGrid.Visibility = Visibility.Hidden;
+                    AboutGrid.Visibility = Visibility.Hidden;
                     break;
                 case "Analysis":
                     AnalysisGrid.Visibility = Visibility.Visible;
                     SearchGrid.Visibility = Visibility.Hidden;
+                    SettingGrid.Visibility = Visibility.Hidden;
+                    AboutGrid.Visibility = Visibility.Hidden;
+                    break;
+                case "Settings":
+                    SettingGrid.Visibility = Visibility.Visible;
+                    AnalysisGrid.Visibility = Visibility.Hidden;
+                    SearchGrid.Visibility = Visibility.Hidden;
+                    AboutGrid.Visibility = Visibility.Hidden;
+                    break;
+                case "About":
+                    SettingGrid.Visibility = Visibility.Hidden;
+                    AnalysisGrid.Visibility = Visibility.Hidden;
+                    SearchGrid.Visibility = Visibility.Hidden;
+                    AboutGrid.Visibility = Visibility.Visible;
                     break;
                 default:
                     break;
             }
 
+            Properties.Settings.Default.Reload();
         }
 
         private void projectListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -187,6 +213,28 @@ namespace UiPathCodeVisualization
                 var excelinstance = new ExportReportExcel(UiPathProjects.ToList(), save_dlg.FileName);
                 excelinstance.CreateProjectListSheets();
                 await this.ShowMessageAsync("保存成功", "Excelファイル出力が完了しました。");
+            }
+        }
+
+        private async void SettingButton_Click(object sender, RoutedEventArgs e)
+        {
+            var result = await this.ShowMessageAsync("確認", "設定を更新します。よろしいですか？", MessageDialogStyle.AffirmativeAndNegative);
+            if (result == MessageDialogResult.Affirmative)
+            {
+                Properties.Settings.Default.Save();
+                await this.ShowMessageAsync("更新成功", "設定の更新が完了しました。");
+                UiPathProjects.Clear();
+            }
+        }
+        private async void ResetButton_Click(object sender, RoutedEventArgs e)
+        {
+            var result = await this.ShowMessageAsync("確認", "設定を初期化します。よろしいですか？",MessageDialogStyle.AffirmativeAndNegative);
+            if(result == MessageDialogResult.Affirmative)
+            {
+                ProjectScoreHelper.ResetProperties();
+                Properties.Settings.Default.Save();
+                await this.ShowMessageAsync("初期化成功", "設定の初期化が完了しました。");
+                UiPathProjects.Clear();
             }
         }
     }

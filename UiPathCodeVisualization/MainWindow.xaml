@@ -11,7 +11,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:metro="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:model="clr-namespace:UiPathProjectAnalyser.Models;assembly=UiPathProjectAnalyser"
-    Title="UiPathCodeVisualizer"
+    xmlns:properties="clr-namespace:UiPathCodeVisualization.Properties"
+    Title="UiCodeMetricsVisualizer"
     Width="1200"
     Height="800"
     SaveWindowPosition="True"
@@ -69,7 +70,17 @@
                     </DataTrigger>
                 </DataTemplate.Triggers>
             </DataTemplate>
+            <Style x:Key="LargeTileStyle" TargetType="Controls:Tile">
+                <Setter Property="Width" Value="300" />
+                <Setter Property="Height" Value="125" />
+                <Setter Property="TitleFontSize" Value="10" />
+            </Style>
 
+            <Style x:Key="SmallTileStyle" TargetType="Controls:Tile">
+                <Setter Property="Width" Value="147" />
+                <Setter Property="Height" Value="125" />
+                <Setter Property="TitleFontSize" Value="10" />
+            </Style>
         </ResourceDictionary>
     </Controls:MetroWindow.Resources>
 
@@ -131,7 +142,7 @@
         </metro:HamburgerMenu.ItemsSource>
         <metro:HamburgerMenu.OptionsItemsSource>
             <metro:HamburgerMenuItemCollection>
-                <!--<metro:HamburgerMenuIconItem Label="Settings">
+                <metro:HamburgerMenuIconItem Label="Settings">
                     <metro:HamburgerMenuIconItem.Icon>
                         <iconPacks:PackIconMaterial
                             Width="16"
@@ -168,7 +179,7 @@
                             About This Apps
                         </TextBlock>
                     </Controls:HamburgerMenuIconItem.Tag>
-                </metro:HamburgerMenuIconItem>-->
+                </metro:HamburgerMenuIconItem>
             </metro:HamburgerMenuItemCollection>
         </metro:HamburgerMenu.OptionsItemsSource>
 
@@ -802,6 +813,332 @@
                             </TabItem>
                         </TabControl>
                     </Grid>
+                </Grid>
+                <Grid x:Name="SettingGrid" Visibility="Hidden">
+                    <StackPanel
+                        Margin="10"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Stretch"
+                        Orientation="Vertical">
+
+                        <!--  Header  -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="auto" />
+                                <ColumnDefinition Width="auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Grid.Column="0"
+                                Style="{StaticResource MaterialDesignHeadline5TextBlock}"
+                                Text="プロジェクトスコア 評価基準値設定画面" />
+                            <Button
+                                x:Name="SettingButton"
+                                Grid.Column="1"
+                                Margin="0,5,5,5"
+                                Click="SettingButton_Click"
+                                Content="設定更新" />
+                            <Button
+                                x:Name="ResetButton"
+                                Grid.Column="2"
+                                Margin="0,5,5,5"
+                                Click="ResetButton_Click"
+                                Content="設定初期化" />
+                        </Grid>
+                        <Separator Style="{StaticResource MaterialDesignDarkSeparator}" />
+
+                        <!--  Activity  -->
+                        <TextBlock
+                            Margin="0,20,0,0"
+                            Style="{StaticResource MaterialDesignBody1TextBlock}"
+                            Text="Avtivity数：1WF内に含まれるActivity数の合計で、少ないほうが良好です。多い時にはWFを分割することを推奨します。" />
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock
+                                Margin="10,0,0,0"
+                                Padding="0,20,0,0"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                Text="Avtivity数が" />
+
+                            <TextBox
+                                Margin="5,0,5,0"
+                                VerticalAlignment="Center"
+                                materialDesign:TextFieldAssist.SuffixText="以下で評価+25点"
+                                AutomationProperties.AutomationId="ActivityLv5"
+                                FontSize="16"
+                                Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                Text="{Binding Path=AvtivityLv5, Source={x:Static properties:Settings.Default}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBox
+                                Margin="5,0,5,0"
+                                VerticalAlignment="Center"
+                                materialDesign:TextFieldAssist.SuffixText="以下で評価+20点"
+                                AutomationProperties.AutomationId="ActivityLv4"
+                                FontSize="16"
+                                Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                Text="{Binding Path=AvtivityLv4, Source={x:Static properties:Settings.Default}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBox
+                                Margin="5,0,5,0"
+                                VerticalAlignment="Center"
+                                materialDesign:TextFieldAssist.SuffixText="以下で評価+15点"
+                                AutomationProperties.AutomationId="ActivityLv3"
+                                FontSize="16"
+                                Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                Text="{Binding Path=AvtivityLv3, Source={x:Static properties:Settings.Default}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBox
+                                Margin="5,0,5,0"
+                                VerticalAlignment="Center"
+                                materialDesign:TextFieldAssist.SuffixText="以下で評価+10点"
+                                AutomationProperties.AutomationId="ActivityLv2"
+                                FontSize="16"
+                                Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                Text="{Binding Path=AvtivityLv2, Source={x:Static properties:Settings.Default}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBox
+                                Margin="5,0,5,0"
+                                VerticalAlignment="Center"
+                                materialDesign:TextFieldAssist.SuffixText="以下で評価+5点"
+                                AutomationProperties.AutomationId="ActivityLv1"
+                                FontSize="16"
+                                Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                Text="{Binding Path=AvtivityLv1, Source={x:Static properties:Settings.Default}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBox
+                                Margin="5,0,5,0"
+                                VerticalAlignment="Center"
+                                materialDesign:TextFieldAssist.SuffixText="より多いと評価+0点"
+                                AutomationProperties.AutomationId="ActivityLv0"
+                                FontSize="16"
+                                IsEnabled="False"
+                                Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                Text="{Binding Path=AvtivityLv1, Source={x:Static properties:Settings.Default}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </StackPanel>
+
+                        <!--  Variables  -->
+                        <TextBlock
+                            Margin="0,20,0,0"
+                            Style="{StaticResource MaterialDesignBody1TextBlock}"
+                            Text="変数の数：1WF内に含まれる変数の合計で、少ないほうが良好です。多い時にはWFを分割する、コレクション型の変数を活用するなどを推奨します。" />
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock
+                                Margin="10,0,0,0"
+                                Padding="0,20,0,0"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                Text="変数の数が" />
+
+                            <TextBox
+                                Margin="5,0,5,0"
+                                VerticalAlignment="Center"
+                                materialDesign:TextFieldAssist.SuffixText="以下で評価+25点"
+                                AutomationProperties.AutomationId="VariableLv5"
+                                FontSize="16"
+                                Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                Text="{Binding Path=VariableLv5, Source={x:Static properties:Settings.Default}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBox
+                                Margin="5,0,5,0"
+                                VerticalAlignment="Center"
+                                materialDesign:TextFieldAssist.SuffixText="以下で評価+20点"
+                                AutomationProperties.AutomationId="VariableLv4"
+                                FontSize="16"
+                                Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                Text="{Binding Path=VariableLv4, Source={x:Static properties:Settings.Default}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBox
+                                Margin="5,0,5,0"
+                                VerticalAlignment="Center"
+                                materialDesign:TextFieldAssist.SuffixText="以下で評価+15点"
+                                AutomationProperties.AutomationId="VariableLv3"
+                                FontSize="16"
+                                Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                Text="{Binding Path=VariableLv3, Source={x:Static properties:Settings.Default}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBox
+                                Margin="5,0,5,0"
+                                VerticalAlignment="Center"
+                                materialDesign:TextFieldAssist.SuffixText="以下で評価+10点"
+                                AutomationProperties.AutomationId="VariableLv2"
+                                FontSize="16"
+                                Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                Text="{Binding Path=VariableLv2, Source={x:Static properties:Settings.Default}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBox
+                                Margin="5,0,5,0"
+                                VerticalAlignment="Center"
+                                materialDesign:TextFieldAssist.SuffixText="以下で評価+5点"
+                                AutomationProperties.AutomationId="VariableLv1"
+                                FontSize="16"
+                                Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                Text="{Binding Path=VariableLv1, Source={x:Static properties:Settings.Default}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBox
+                                Margin="5,0,5,0"
+                                VerticalAlignment="Center"
+                                materialDesign:TextFieldAssist.SuffixText="より多いと評価+0点"
+                                AutomationProperties.AutomationId="VariableLv0"
+                                FontSize="16"
+                                IsEnabled="False"
+                                Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                Text="{Binding Path=VariableLv1, Source={x:Static properties:Settings.Default}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </StackPanel>
+
+                        <!--  Complexity  -->
+                        <TextBlock
+                            Margin="0,20,0,0"
+                            Style="{StaticResource MaterialDesignBody1TextBlock}"
+                            Text="サイクロマティック複雑度：1WF内に含まれる分岐の数の合計で、少ないほうが可読性、保守性、移植性が高まります。" />
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock
+                                Margin="10,0,0,0"
+                                Padding="0,20,0,0"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                Text="分岐の合計数が" />
+
+                            <TextBox
+                                Margin="5,0,5,0"
+                                VerticalAlignment="Center"
+                                materialDesign:TextFieldAssist.SuffixText="以下で評価+25点"
+                                AutomationProperties.AutomationId="ComplexityLv5"
+                                FontSize="16"
+                                Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                Text="{Binding Path=ComplexityLv5, Source={x:Static properties:Settings.Default}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBox
+                                Margin="5,0,5,0"
+                                VerticalAlignment="Center"
+                                materialDesign:TextFieldAssist.SuffixText="以下で評価+20点"
+                                AutomationProperties.AutomationId="ComplexityLv4"
+                                FontSize="16"
+                                Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                Text="{Binding Path=ComplexityLv4, Source={x:Static properties:Settings.Default}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBox
+                                Margin="5,0,5,0"
+                                VerticalAlignment="Center"
+                                materialDesign:TextFieldAssist.SuffixText="以下で評価+15点"
+                                AutomationProperties.AutomationId="ComplexityLv3"
+                                FontSize="16"
+                                Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                Text="{Binding Path=ComplexityLv3, Source={x:Static properties:Settings.Default}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBox
+                                Margin="5,0,5,0"
+                                VerticalAlignment="Center"
+                                materialDesign:TextFieldAssist.SuffixText="以下で評価+10点"
+                                AutomationProperties.AutomationId="ComplexityLv2"
+                                FontSize="16"
+                                Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                Text="{Binding Path=ComplexityLv2, Source={x:Static properties:Settings.Default}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBox
+                                Margin="5,0,5,0"
+                                VerticalAlignment="Center"
+                                materialDesign:TextFieldAssist.SuffixText="以下で評価+5点"
+                                AutomationProperties.AutomationId="ComplexityLv1"
+                                FontSize="16"
+                                Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                Text="{Binding Path=ComplexityLv1, Source={x:Static properties:Settings.Default}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBox
+                                Margin="5,0,5,0"
+                                VerticalAlignment="Center"
+                                materialDesign:TextFieldAssist.SuffixText="より多いと評価+0点"
+                                AutomationProperties.AutomationId="ComplexityLv0"
+                                FontSize="16"
+                                IsEnabled="False"
+                                Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                Text="{Binding Path=ComplexityLv1, Source={x:Static properties:Settings.Default}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </StackPanel>
+
+                        <!--  Depth  -->
+                        <TextBlock
+                            Margin="0,20,0,0"
+                            Style="{StaticResource MaterialDesignBody1TextBlock}"
+                            Text="階層の深さ：1WF内でのActivityの階層の最大値で、少ないほうが良好です。深くなると見通しが悪くなり複雑になります。" />
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock
+                                Margin="10,0,0,0"
+                                Padding="0,20,0,0"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                Text="階層の深さの最大が" />
+
+                            <TextBox
+                                Margin="5,0,5,0"
+                                VerticalAlignment="Center"
+                                materialDesign:TextFieldAssist.SuffixText="以下で評価+25点"
+                                AutomationProperties.AutomationId="DepthLv5"
+                                FontSize="16"
+                                Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                Text="{Binding Path=DepthLv5, Source={x:Static properties:Settings.Default}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBox
+                                Margin="5,0,5,0"
+                                VerticalAlignment="Center"
+                                materialDesign:TextFieldAssist.SuffixText="以下で評価+20点"
+                                AutomationProperties.AutomationId="DepthLv4"
+                                FontSize="16"
+                                Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                Text="{Binding Path=DepthLv4, Source={x:Static properties:Settings.Default}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBox
+                                Margin="5,0,5,0"
+                                VerticalAlignment="Center"
+                                materialDesign:TextFieldAssist.SuffixText="以下で評価+15点"
+                                AutomationProperties.AutomationId="DepthLv3"
+                                FontSize="16"
+                                Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                Text="{Binding Path=DepthLv3, Source={x:Static properties:Settings.Default}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBox
+                                Margin="5,0,5,0"
+                                VerticalAlignment="Center"
+                                materialDesign:TextFieldAssist.SuffixText="以下で評価+10点"
+                                AutomationProperties.AutomationId="DepthLv2"
+                                FontSize="16"
+                                Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                Text="{Binding Path=DepthLv2, Source={x:Static properties:Settings.Default}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBox
+                                Margin="5,0,5,0"
+                                VerticalAlignment="Center"
+                                materialDesign:TextFieldAssist.SuffixText="以下で評価+5点"
+                                AutomationProperties.AutomationId="DepthLv1"
+                                FontSize="16"
+                                Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                Text="{Binding Path=DepthLv1, Source={x:Static properties:Settings.Default}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBox
+                                Margin="5,0,5,0"
+                                VerticalAlignment="Center"
+                                materialDesign:TextFieldAssist.SuffixText="より多いと評価+0点"
+                                AutomationProperties.AutomationId="DepthLv0"
+                                FontSize="16"
+                                IsEnabled="False"
+                                Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                Text="{Binding Path=DepthLv1, Source={x:Static properties:Settings.Default}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                </Grid>
+                <Grid x:Name="AboutGrid" Visibility="Hidden">
+                    <WrapPanel
+                        Margin="40"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Bottom">
+
+                        <Controls:Tile
+                            Title="Version 1.1.0"
+                            Background="#D2691E"
+                            Style="{StaticResource LargeTileStyle}">
+                            <iconPacks:PackIconModern
+                                Width="40"
+                                Height="40"
+                                Kind="App" />
+                        </Controls:Tile>
+                        <Controls:Tile
+                            Title="2021/12/21 Last Updated"
+                            Background="#1E90FF"
+                            Style="{StaticResource LargeTileStyle}">
+                            <iconPacks:PackIconModern
+                                Width="40"
+                                Height="40"
+                                Kind="NewspaperCreate" />
+                        </Controls:Tile>
+                        <Controls:Tile
+                            Title="This App is Created by Masaaki Yoshida"
+                            Background="Green"
+                            Style="{StaticResource LargeTileStyle}">
+                            <iconPacks:PackIconModern
+                                Width="40"
+                                Height="40"
+                                Kind="PeopleProfile" />
+                        </Controls:Tile>
+                    </WrapPanel>
                 </Grid>
                 <Controls:ProgressRing x:Name="progress" IsActive="false" />
             </Grid>

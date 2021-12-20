@@ -105,11 +105,11 @@ namespace UiPathProjectAnalyser.Models
             GetXElementSeq(this.Document.Root.Elements().Where(elem => elem.Attribute("DisplayName") != null)?.FirstOrDefault(), ref count,ref max,ref idList);
             this.NestedCount = max;
 
-            this.WorkflowScore = WorkflowScoreHelper.VariableScore(VariableCount) +
-                            WorkflowScoreHelper.ActivityScore(ActivityCount) +
-                            WorkflowScoreHelper.ComplexityScore(CyclomaticComplexity) +
-                            WorkflowScoreHelper.DepthScore(NestedCount) +
-                            WorkflowScoreHelper.DelayScore(DelayCount);
+            //this.WorkflowScore = WorkflowScoreHelper.VariableScore(VariableCount) +
+            //                WorkflowScoreHelper.ActivityScore(ActivityCount) +
+            //                WorkflowScoreHelper.ComplexityScore(CyclomaticComplexity) +
+            //                WorkflowScoreHelper.DepthScore(NestedCount) +
+            //                WorkflowScoreHelper.DelayScore(DelayCount);
 
             this.InvokeFiles = new ObservableCollection<string>(this.Document.Descendants().Where(elem => elem.Name.LocalName == "InvokeWorkflowFile").Select(elem => elem.Attribute("WorkflowFileName").Value).Distinct());
 

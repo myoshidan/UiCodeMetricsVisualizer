@@ -53,7 +53,7 @@ namespace UiPathProjectAnalyser
                 }
                 else
                 {
-                    throw new ArgumentException($"{jsonFilePath}は有効なUiPathProjectファイルではありません");
+                    throw new ArgumentException($"{jsonFilePath}は有効なUiPathProjectファイルではないか、未対応の形式です。");
                 }
             }
 
@@ -85,7 +85,7 @@ namespace UiPathProjectAnalyser
             this.MaxNestedCount = WorkFlows.Select(x => x.NestedCount).Max();
             this.TotalCyclomaticComplexity = WorkFlows.Select(x => x.CyclomaticComplexity).Sum();
             this.TotalAvtivityKind= WorkFlows.SelectMany(x => x.ActivityLists).GroupBy(p => p.ActivityName).Count();
-            this.WorkflowScoreAverage = (int)WorkFlows.Select(x => x.WorkflowScore).Average();
+            //this.WorkflowScoreAverage = (int)WorkFlows.Select(x => x.WorkflowScore).Average();
             this.BadWorkflowFileCount = (int)WorkFlows.Where(x => x.WorkflowScore < 50).Count();
             this.CallHierarchies = FetchCallHierarchy(this.Project.main);
         }
